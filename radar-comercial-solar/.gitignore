@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+.bin/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Dados operacionais com PII — não versionar
+leads/
+data/
+
+# Runtime data
+*.bak
+*.json.bak
+*.md.bak
+
+# Playwright cache
+playwright-report/
+test-results/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

@@ -1,0 +1,29 @@
+{
+  "name": "radar-comercial-solar",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "radar:gerar-buscas": "node --experimental-strip-types src/cli.ts radar:gerar-buscas",
+    "radar:descobrir": "node --experimental-strip-types src/cli.ts radar:descobrir",
+    "radar:resolver-sites": "node --experimental-strip-types src/cli.ts radar:resolver-sites",
+    "radar:captar": "node --experimental-strip-types src/cli.ts radar:captar",
+    "radar:captar-hibrido": "node --experimental-strip-types src/cli.ts radar:captar-hibrido",
+    "radar:analisar-sites": "node --experimental-strip-types src/cli.ts radar:analisar-sites",
+    "radar:pontuar": "node --experimental-strip-types src/cli.ts radar:pontuar",
+    "radar:revisar": "node --experimental-strip-types src/cli.ts radar:revisar",
+    "radar:rodar-v1": "node --experimental-strip-types src/cli.ts radar:rodar-v1",
+    "radar:rodar-hibrido": "node --env-file=.env --experimental-strip-types src/cli.ts radar:rodar-hibrido",
+    "radar:registrar-aprovados": "node --experimental-strip-types src/cli.ts radar:registrar-aprovados",
+    "radar:listar-aprovados": "node --env-file=.env --experimental-strip-types src/cli.ts radar:listar-aprovados",
+    "radar:enviar-aprovados": "node --env-file=.env --experimental-strip-types src/cli.ts radar:enviar-aprovados",
+    "radar:aberturas": "node --env-file=.env --experimental-strip-types src/cli.ts radar:aberturas",
+    "radar:auditar-brevo": "node --env-file-if-exists=.env --experimental-strip-types src/cli.ts radar:auditar-brevo",
+    "radar:painel": "node --env-file-if-exists=.env --experimental-strip-types src/panel/server.ts",
+    "radar:painel:build": "cd src/panel/ui && npm run build",
+    "radar:painel:dev": "cd src/panel/ui && npx vite"
+  },
+  "dependencies": {
+    "playwright-core": "^1.60.0"
+  }
+}
