@@ -66,12 +66,22 @@ Essas fontes ficam documentadas em dois arquivos novos de referência (não cód
 
 ## Lógica de qualificação
 
-Cada candidato passa por leitura real (por IA, não regex) antes de qualquer score, respondendo:
+Qualificação em duas etapas, pra não gastar leitura funda (e token) em candidato óbvio — de ruído ou de duplicidade:
+
+**Etapa 1 — filtro barato (sem abrir o site do candidato):**
+
+1. Não é cliente atual (`data/clientes-atuais.json`)?
+2. Não está em `data/nao-contatar.json`?
+3. **Não é contato já existente no Brevo** — checagem por domínio/e-mail via API do Brevo antes de prosseguir. Se já existe (de qualquer lista, não só da campanha atual), descarta aqui — não repete trabalho de qualificação em quem já está na base.
+4. Passa num descarte rápido por título/snippet de busca (nicho obviamente errado, tipo "loja de tecido")?
+
+Só quem sobrevive à Etapa 1 avança pra leitura funda.
+
+**Etapa 2 — leitura real (por IA, não regex) só em quem sobrou:**
 
 1. É do nicho certo (solar/fotovoltaico ou industrial-agro-bebidas conforme o perfil buscado)?
 2. Tem sinal de operação física recorrente (estoque, CD, expedição, catálogo de produtos, atendimento B2B, entrega regional/nacional)?
 3. Porte e região batem com o perfil (polos de preferência do Perfil A; rotas PR-MG-SP-RJ-DF do Perfil B)?
-4. Não é cliente atual (`data/clientes-atuais.json`) nem está em `data/nao-contatar.json`?
 
 Só depois disso os critérios de `regras-score.md` são aplicados para estimar potencial e definir o registro em `leads-qualificados.md`, `leads-brutos.md` (pendente de mais info) ou `leads-descartados.md`.
 
@@ -95,6 +105,7 @@ O rewrite só é considerado pronto quando:
 - A taxa de ruído óbvio (candidato claramente fora do nicho, tipo "loja de tecido") estiver próxima de zero — não apenas "menor que antes"
 - Os arquivos `inteligencia/fontes-estruturadas-*.md` existirem e estiverem preenchidos com fontes reais e verificáveis (não fictícias)
 - Nenhum candidato do lote piloto for cliente atual da Phenyx (checagem cruzada com `data/clientes-atuais.json` confirmada manualmente)
+- Nenhum candidato do lote piloto já for contato existente no Brevo (checagem via API confirmada manualmente, incluindo os 22 contatos da campanha "Armazenagem PE" original)
 - O fluxo sob demanda (sem comandos CLI de descoberta) tiver sido usado de ponta a ponta pelo menos uma vez por perfil
 
 ## Riscos e limites
