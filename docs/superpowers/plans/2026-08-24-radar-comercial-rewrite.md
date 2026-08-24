@@ -15,6 +15,7 @@
 - Every candidate lead must be checked against `data/clientes-atuais.json` and `data/nao-contatar.json` before registration — never register an existing client or a do-not-contact entry.
 - Brevo dedupe check (`BrevoClient.findContactByEmail`) happens as soon as a candidate's e-mail is found, before finishing the qualification write-up — never register a lead that's already a Brevo contact.
 - Every new lead entry written to `leads/*.md` or `data/fila-revisao.json` must also carry a `region` value that exactly matches one of the `fase: 1` labels in `data/regioes.json` (see Task 4) — otherwise the panel's Fase-1 filter silently hides it.
+- **Perfil B coverage rule (filial PR/Maringá only, does not apply to Perfil A/filial PE):** direct coverage is PR/SP/SC/MS. A Perfil B candidate in MG/RJ/DF or any other state is still a valid target, but its `region` must be `"Sul-Sudeste (Perfil B) — cotação antecipada PR"` (not the direct-coverage label), and its "Próxima ação" field must say "Solicitar cotação antecipada à filial PR antes de fechar".
 - Do not modify `src/panel/ui/*` — it has its own independent type definitions and is unaffected by any backend change in this plan.
 - Do not remove `ScoredLead`, `RawLead`, `AnalyzedLead`, `SiteAnalysis`, `LogisticSignal`, `ScoreBreakdown`, `LeadStatus`, `SignalStrength`, `DiscoverySourceType` from `lead-types.ts` — they're dead at runtime but structurally required by kept panel files.
 - No API key, no new automated/scheduled discovery code — this rewrite is agent-in-session only (see spec's "Decisão sobre ferramenta de CRM/e-mail" and Opção 1 vs Opção 2 discussion).
@@ -322,16 +323,26 @@ Replace the file content with:
       "fase": 1
     },
     {
-      "id": "sul_sudeste_perfil_b",
-      "label": "Sul-Sudeste (Perfil B)",
+      "id": "perfil_b_cobertura_direta_pr",
+      "label": "Sul-Sudeste (Perfil B) — cobertura direta PR",
       "terms": [
         "Paraná",
-        "Minas Gerais",
         "São Paulo",
+        "Santa Catarina",
+        "Mato Grosso do Sul"
+      ],
+      "priority": "alta",
+      "fase": 1
+    },
+    {
+      "id": "perfil_b_cotacao_antecipada_pr",
+      "label": "Sul-Sudeste (Perfil B) — cotação antecipada PR",
+      "terms": [
+        "Minas Gerais",
         "Rio de Janeiro",
         "Distrito Federal"
       ],
-      "priority": "alta",
+      "priority": "media",
       "fase": 1
     },
     {
@@ -491,7 +502,16 @@ Fontes de descoberta de alta precisão para o Perfil B, verificadas em 2026-08-2
 
 1. Abrir o diretório/sindicato relevante e listar candidatos com nome + site.
 2. Aplicar a Etapa 1 (filtro barato) de `docs/superpowers/specs/2026-08-24-radar-comercial-rewrite-design.md` antes de ler qualquer site a fundo.
-3. Complementar com busca direcionada por concorrentes/parceiros dos clientes-espelho reais (Ambev, Coamo, Owens-Illinois, Crown, Trigobel, Camil, Spal, HNK) via WebSearch, sempre restrito às rotas PR-MG-SP-RJ-DF (ver `data/regioes.json`, região `sul_sudeste_perfil_b`).
+3. Complementar com busca direcionada por concorrentes/parceiros dos clientes-espelho reais (Ambev, Coamo, Owens-Illinois, Crown, Trigobel, Camil, Spal, HNK) via WebSearch.
+
+## Cobertura da filial PR (obrigatório registrar por candidato)
+
+O Perfil B é atendido pela filial Maringá/PR, que **não tem cobertura nacional**. Ao qualificar um candidato:
+
+- Se ele está em **PR, SP, SC ou MS** → `region: "Sul-Sudeste (Perfil B) — cobertura direta PR"`, próxima ação normal.
+- Se ele está em **qualquer outro estado** (MG, RJ, DF etc.) → continua sendo alvo válido, mas `region: "Sul-Sudeste (Perfil B) — cotação antecipada PR"` e "Próxima ação" deve dizer "Solicitar cotação antecipada à filial PR antes de fechar".
+
+Essa regra vale só para a filial PR — não se aplica ao Perfil A (filial PE já tem cobertura própria validada no Nordeste).
 
 ## Nota sobre alimentício/armazenagem
 
@@ -512,11 +532,12 @@ git commit -m "docs: add structured discovery sources for Perfil B (industrial/a
 
 ---
 
-### Task 8: Update `contexto/clientes-espelho.md` and `inteligencia/nichos-prioritarios.md` for Perfil B
+### Task 8: Update `contexto/clientes-espelho.md`, `inteligencia/nichos-prioritarios.md`, and `contexto/perfil-phenyx.md` for Perfil B
 
 **Files:**
 - Modify: `contexto/clientes-espelho.md`
 - Modify: `inteligencia/nichos-prioritarios.md`
+- Modify: `contexto/perfil-phenyx.md`
 
 - [ ] **Step 1: Append the Perfil B mirror clients to `contexto/clientes-espelho.md`**
 
@@ -612,12 +633,20 @@ Atenção:
 - Nicho alimentício está excluído permanentemente da oferta de **armazenagem** (ver `contexto/objetivo.md`) — qualificar e abordar como oportunidade de **transporte**, não armazenagem
 ```
 
-- [ ] **Step 3: Commit**
+- [ ] **Step 3: Append a coverage-filter note to `contexto/perfil-phenyx.md`**
+
+Add at the end of the "Filtros mentais para análise" section:
+
+```markdown
+- Perfil B (indústria/agro/bebidas) é atendido pela filial Maringá/PR, que não tem cobertura nacional: atendimento direto é PR/SP/SC/MS; candidatos em outros estados continuam válidos, mas precisam de "cotação antecipada à filial PR" antes de fechar — essa regra não se aplica ao Perfil A (filial PE tem cobertura própria já validada no Nordeste)
+```
+
+- [ ] **Step 4: Commit**
 
 ```bash
 cd /Users/nmicayo/Documents/Projects/Trabalho/comercial-clientes/radar-comercial-solar
-git add contexto/clientes-espelho.md inteligencia/nichos-prioritarios.md
-git commit -m "docs: add Perfil B mirror clients and priority niche"
+git add contexto/clientes-espelho.md inteligencia/nichos-prioritarios.md contexto/perfil-phenyx.md
+git commit -m "docs: add Perfil B mirror clients, priority niche, and PR filial coverage rule"
 ```
 
 ---
@@ -702,7 +731,7 @@ Using `inteligencia/fontes-estruturadas-solar.md`, discover 15-20 candidates. Fo
 
 - [ ] **Step 2: Run a Perfil B pilot batch (15-20 candidates)**
 
-Same process using `inteligencia/fontes-estruturadas-industrial.md`, with `region: "Sul-Sudeste (Perfil B)"`.
+Same process using `inteligencia/fontes-estruturadas-industrial.md`. For each candidate, apply the PR filial coverage rule: `region: "Sul-Sudeste (Perfil B) — cobertura direta PR"` if the candidate is in PR/SP/SC/MS, or `region: "Sul-Sudeste (Perfil B) — cotação antecipada PR"` otherwise (with "Próxima ação" noting the advance-quote requirement). Aim for a mix of both so the pilot report can confirm the distinction actually gets applied, not just the direct-coverage case.
 
 - [ ] **Step 3: Write the validation report**
 
