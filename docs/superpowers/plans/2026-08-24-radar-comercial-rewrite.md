@@ -176,14 +176,17 @@ git commit -m "refactor: drop discovery/scoring CLI commands, keep Brevo approva
 
 ---
 
-### Task 3: Trim `src/contracts/lead-types.ts`
+### Task 3: Trim `src/contracts/lead-types.ts` and `src/config/keywords.ts`
 
 **Files:**
 - Modify: `src/contracts/lead-types.ts`
+- Modify: `src/config/keywords.ts`
 
 **Interfaces:**
 - Consumes: nothing new
-- Produces: same exported type names as before, minus `GeneratedSearch`, `DiscoveredCandidate`, `ResolvedSiteCandidate` — every other export (including the `ScoredLead` chain) stays because `src/panel/panel-service.ts`, `src/panel/list-approved.ts`, and `src/panel/send-approved.ts` still import `ScoredLead`.
+- Produces: same exported type names as before, minus `GeneratedSearch`, `DiscoveredCandidate`, `ResolvedSiteCandidate` — every other export (including the `ScoredLead` chain) stays because `src/panel/panel-service.ts`, `src/panel/list-approved.ts`, and `src/panel/send-approved.ts` still import `ScoredLead`. `src/config/keywords.ts` keeps exporting `RegionEntry`, `RegionCatalog`, `loadRegionCatalog` (the last is uncalled today, but it operates on the live `data/regioes.json` Task 4 maintains — cheap to keep) — `panel-service.ts` imports `RegionCatalog` from this exact file.
+
+**Correction (found during implementation):** `src/config/keywords.ts` was missing from Task 1's deletion list even though it imports `GeneratedSearch` (removed by this task) and defines `buildSearchId` (part of the discarded search-generation pipeline, unused anywhere now). It cannot be deleted wholesale — `RegionEntry`/`RegionCatalog` in the same file are imported by the kept `src/panel/panel-service.ts`. This task now also trims that file: remove `KeywordGroup`, `KeywordCatalog`, `loadKeywordCatalog`, `buildSearchId`, and the `GeneratedSearch` import; keep `RegionEntry`, `RegionCatalog`, `loadRegionCatalog`, and the `resolve`/`readJsonArtifact` imports they still need.
 
 - [ ] **Step 1: Remove the three orphaned types**
 
@@ -256,19 +259,51 @@ export type ResolvedSiteCandidate = {
 
 Leave every other type in the file untouched — `LeadStatus`, `PotentialLevel`, `ReviewDecision`, `SignalStrength`, `DiscoverySourceType`, `LogisticSignal`, `RawLead`, `SiteAnalysis`, `AnalyzedLead`, `ScoreBreakdown`, `ScoredLead`, `ReviewLead`, `OperationalLeadStatus`, `BrevoDeliveryStatus`, `DuplicateSource`, `DuplicateIdentifierType`, `BrevoDeliveryAttempt`, `ReviewApproval` all stay exactly as they are.
 
-- [ ] **Step 2: Verify nothing references the removed types**
+- [ ] **Step 2: Trim `src/config/keywords.ts`**
+
+Replace the file content with:
+
+```typescript
+import { resolve } from "node:path";
+
+import { readJsonArtifact } from "../storage/json-artifact-store.ts";
+
+export type RegionEntry = {
+  id: string;
+  label: string;
+  terms: string[];
+  priority: string;
+  fase?: number;
+  lat?: number;
+  lng?: number;
+  radiusMeters?: number;
+};
+
+export type RegionCatalog = {
+  regioes: RegionEntry[];
+};
+
+export const loadRegionCatalog = async (projectRoot: string): Promise<RegionCatalog> => {
+  const filePath = resolve(projectRoot, "data", "regioes.json");
+  return readJsonArtifact<RegionCatalog>(filePath, { regioes: [] });
+};
+```
+
+This drops the `GeneratedSearch` import, `KeywordGroup`, `KeywordCatalog`, `loadKeywordCatalog`, and `buildSearchId`.
+
+- [ ] **Step 3: Verify nothing references the removed types/functions**
 
 ```bash
 cd /Users/nmicayo/Documents/Projects/Trabalho/comercial-clientes/radar-comercial-solar
-grep -rn "GeneratedSearch\|DiscoveredCandidate\|ResolvedSiteCandidate" src/
+grep -rn "GeneratedSearch\|DiscoveredCandidate\|ResolvedSiteCandidate\|KeywordGroup\|KeywordCatalog\|loadKeywordCatalog\|buildSearchId" src/
 ```
 Expected: no output.
 
-- [ ] **Step 3: Commit**
+- [ ] **Step 4: Commit**
 
 ```bash
-git add src/contracts/lead-types.ts
-git commit -m "refactor: drop discovery-only types from lead-types.ts, keep ScoredLead chain for panel"
+git add src/contracts/lead-types.ts src/config/keywords.ts
+git commit -m "refactor: drop discovery-only types from lead-types.ts and keywords.ts, keep ScoredLead chain and RegionCatalog for panel"
 ```
 
 ---
