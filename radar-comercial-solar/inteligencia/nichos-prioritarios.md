@@ -120,3 +120,22 @@ Por que manter no radar:
 
 Atenção:
 - Sem sinal claro de operação física, não são foco comercial principal nesta etapa
+
+---
+
+## 7. Indústria de alimentos/bebidas/agro (Perfil B — novo)
+
+Prioridade: Alta
+
+Empresas que:
+- Produzem alimentos, bebidas ou insumos agrícolas em escala industrial
+- Têm rotas recorrentes de distribuição Sul-Sudeste (PR/MG/SP/RJ/DF)
+- Fornecem para atacadistas, distribuidores ou outras indústrias (ex: fabricantes de embalagem)
+
+Por que são boas:
+- Clientes-espelho reais confirmados por dados de operação (não hipótese) — ver `contexto/clientes-espelho.md`
+- Alto volume de frete recorrente
+- Podem indicar fornecedores/concorrentes no mesmo setor
+
+Atenção:
+- Nicho alimentício está excluído permanentemente da oferta de **armazenagem** (ver `contexto/objetivo.md`) — qualificar e abordar como oportunidade de **transporte**, não armazenagem
