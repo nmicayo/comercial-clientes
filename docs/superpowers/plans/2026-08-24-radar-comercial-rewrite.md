@@ -19,6 +19,7 @@
 - Do not modify `src/panel/ui/*` — it has its own independent type definitions and is unaffected by any backend change in this plan.
 - Do not remove `ScoredLead`, `RawLead`, `AnalyzedLead`, `SiteAnalysis`, `LogisticSignal`, `ScoreBreakdown`, `LeadStatus`, `SignalStrength`, `DiscoverySourceType` from `lead-types.ts` — they're dead at runtime but structurally required by kept panel files.
 - No API key, no new automated/scheduled discovery code — this rewrite is agent-in-session only (see spec's "Decisão sobre ferramenta de CRM/e-mail" and Opção 1 vs Opção 2 discussion).
+- **`data/` and `leads/` are gitignored in this repo** (`.gitignore`: "Dados operacionais com PII — não versionar"). Every task touching those paths (Task 4, Task 10) is invisible to `git diff`/`review-package` — verify by reading the live filesystem directly, not by trusting an empty-looking diff. This applies to the final whole-branch review too.
 
 ---
 
