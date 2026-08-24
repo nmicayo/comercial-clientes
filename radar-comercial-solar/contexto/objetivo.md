@@ -37,7 +37,7 @@ Ver `docs/superpowers/specs/2026-08-24-radar-comercial-rewrite-design.md` para o
 
 **Nota:** essa exclusão vale para a oferta de armazenagem. Leads alimentícios do Perfil B (transporte recorrente) não estão bloqueados por esta regra — ver `inteligencia/fontes-estruturadas-industrial.md`.
 
-Outros segmentos fora do solar podem ser incluídos em fases futuras, mas não são o foco atual.
+Perfil B (industrial/agro/bebidas) já é foco atual — ver seção Escopo acima. Outros segmentos além dos dois perfis ativos podem ser incluídos em fases futuras.
 
 ## Fora do escopo desta fase
 
@@ -45,4 +45,3 @@ Outros segmentos fora do solar podem ser incluídos em fases futuras, mas não s
 - Integração com CRM ou Brevo
 - Frontend
 - Scraping ou automação pesada
-- Prospecção nas filiais de PR e SP (reservado para Fase 2)
