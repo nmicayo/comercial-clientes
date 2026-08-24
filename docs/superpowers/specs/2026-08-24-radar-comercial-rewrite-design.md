@@ -27,22 +27,28 @@ Diferente da Parte 1 original (só solar/PE), o rewrite nasce cobrindo os dois p
 - **Perfil A — Energia solar / Nordeste (last-mile capilar).** Perfil original do projeto, validado pelos clientes-espelho reais Sol Copérnico e Solfácil (68% do volume de CTRCs do período analisado).
 - **Perfil B — Industrial/agro/bebidas / Sul-Sudeste (rotas recorrentes).** Perfil novo, validado pelos clientes-espelho reais Ambev, Coamo Agroindustrial, Owens-Illinois, Crown Embalagens, Trigobel, Camil, Spal Indústria, HNK BR Indústria.
 
+**Nota sobre cobertura geográfica do Perfil B (filial PR):** o Perfil B é atendido pela filial Maringá/PR. Orientação recebida (2026-08-24): a filial PR não tem cobertura nacional — atendimento direto é **PR, SP, SC, MS**; os demais estados (incluindo MG, RJ, DF, que estavam no escopo original do Perfil B) são atendidos, mas **exigem cotação antecipada** antes de fechar. Essa regra vale só para a filial PR — não se aplica ao Perfil A (filial PE/Cabo de Santo Agostinho tem sua própria cobertura, já validada pelos dados reais de entrega no Nordeste). Isso não exclui MG/RJ/DF do Perfil B — só muda a próxima ação: todo lead do Perfil B fora de PR/SP/SC/MS deve ter "Próxima ação" registrada como "Solicitar cotação antecipada à filial PR antes de fechar", nunca tratado como cobertura padrão.
+
 **Nota sobre o Perfil B e a exclusão de alimentício:** `contexto/objetivo.md` original exclui permanentemente os segmentos Químico e Alimentício por incompatibilidade com a operação de **armazenagem** da Phenyx. Os clientes-espelho do Perfil B (Ambev, Camil, Trigobel) são, na prática, clientes de **transporte/frete recorrente**, não de armazenagem. O rewrite trata isso como interpretação explícita: a exclusão de alimentício/químico continua valendo para oferta de armazenagem, mas não bloqueia prospecção de transporte recorrente nesses segmentos. Esse ponto deve ser confirmado por quem decide a oferta comercial antes do primeiro contato real com um lead do Perfil B do ramo alimentício.
 
 **Escopo do Nicolas:** clientes novos apenas — recorrente (Perfil A e B) e operações pontuais/spot. A carteira atual de clientes não é alçada dele e nenhum lead descoberto pode ser um cliente já ativo (checagem obrigatória contra `data/clientes-atuais.json`).
 
 ## O que é descartado
 
-- `src/collectors/*` — scraping de Bing/DuckDuckGo via Playwright
-- Resolução heurística de site oficial
-- Comandos: `radar:gerar-buscas`, `radar:descobrir`, `radar:resolver-sites`, `radar:captar-hibrido`, `radar:rodar-hibrido`, `radar:pontuar` (score numérico automatizado por keyword)
-- `data/buscas-geradas.json`, `data/resultados-brutos.json`, `data/sites-analisados.json`, `data/sites-resolvidos.json`, `data/resultados-descoberta.json` e seus `.bak` — artefatos do pipeline antigo, sem valor fora dele
+- `src/collectors/*` (`discover-companies.ts`, `fetch-company-site.ts`, `generate-searches.ts`, `google-places-discovery-provider.ts`, `resolve-company-site.ts`, `search-places.ts`, `capture-hybrid.ts`) — scraping de Bing/DuckDuckGo via Playwright e resolução heurística de site oficial
+- `src/analysis/*` (`classify-lead.ts`, `extract-signals.ts`, `score-lead.ts`) — score numérico automatizado por keyword
+- `src/config/keywords.ts`, `src/config/score-rules.ts` (mantém só o conteúdo textual equivalente em `inteligencia/regras-score.md`, que já existe fora do código)
+- `src/review/review-queue.ts` — transforma `ScoredLead[]` (produzido só pelo pipeline descartado) em `ReviewLead[]`; sem produtor de `ScoredLead`, fica sem uso. Os mapas de nicho/cliente-espelho nesse arquivo também são só-solar, incompatíveis com o Perfil B.
+- `src/contracts/discovery-provider.ts`, `src/contracts/search-provider.ts` — contratos usados só pelos collectors
+- Em `src/contracts/lead-types.ts`: os tipos `GeneratedSearch`, `DiscoveredCandidate`, `ResolvedSiteCandidate`, `RawLead`, `SiteAnalysis`, `AnalyzedLead`, `ScoreBreakdown`, `ScoredLead` e o `LeadStatus` associado a estágios do pipeline antigo (`captado`, `analisado`, `pontuado`) — o arquivo é **editado, não apagado** (ver seção "O que fica")
+- Comandos em `package.json`/`src/cli.ts`: `radar:gerar-buscas`, `radar:descobrir`, `radar:resolver-sites`, `radar:captar`, `radar:captar-hibrido`, `radar:analisar-sites`, `radar:pontuar`, `radar:revisar`, `radar:rodar-v1`, `radar:rodar-hibrido`
+- `data/buscas-geradas.json`, `data/resultados-brutos.json`, `data/sites-analisados.json`, `data/sites-resolvidos.json`, `data/resultados-descoberta.json`, `data/keywords.json`, `data/regioes.json`, `data/exemplos/*` e todos os `.bak` correspondentes — artefatos do pipeline antigo, sem valor fora dele
 
 ## O que fica (não foi o problema)
 
 - Modelo de dados em Markdown: `leads/leads-brutos.md`, `leads/leads-qualificados.md`, `leads/leads-descartados.md`, com o mesmo formato de registro já validado (campos: Empresa, Site, Cidade/UF, Segmento, Fonte, Descrição encontrada, Sinais logísticos, Cliente espelho mais parecido, Potencial, Score estimado, Motivo da classificação, Canal sugerido, Próxima ação, Status + campos de campanha)
 - `data/clientes-atuais.json` e `data/nao-contatar.json` como guarda-corpo obrigatório antes de qualquer registro ou contato
-- Painel local de aprovação Brevo (`src/panel`) — dedupe local, consulta à API do Brevo antes de criar contato, bloqueio se contato já existir. Mantido como está; ferramenta de CRM/e-mail (Brevo) não muda nesta fase (ver decisão registrada abaixo).
+- **Painel local de aprovação Brevo e sua cadeia de dados** — mantidos como estão, sem alteração de código: `src/panel/*` (painel, `BrevoClient` com `findContactByEmail`/`createContact`), `src/review/register-approved.ts` (lê `data/fila-revisao.json` + `data/aprovacoes-revisao.json`, escreve em `leads/*.md`), o tipo `ReviewLead`/`ReviewApproval` em `lead-types.ts`, e os comandos `radar:registrar-aprovados`, `radar:listar-aprovados`, `radar:enviar-aprovados`, `radar:aberturas`, `radar:auditar-brevo`, `radar:painel`. **Mudança de responsabilidade, não de código:** hoje `data/fila-revisao.json` é gerado por `review-queue.ts` a partir do pipeline automatizado; no rewrite, quem escreve `data/fila-revisao.json` (no mesmo formato `ReviewLead[]`) é a própria qualificação por IA (seção seguinte) — o painel e o resto da cadeia downstream não percebem diferença.
 - `inteligencia/regras-score.md` como critério de julgamento — deixa de ser aplicado por regex/keyword e passa a ser aplicado por leitura real (ver próxima seção)
 
 **Decisão sobre ferramenta de CRM/e-mail:** avaliado trocar Brevo por HubSpot; descartado porque o plano free do HubSpot não inclui automação/sequência multi-etapa (fica atrás do Sales Hub pago), enquanto o Brevo free já inclui automação real (até 2.000 contatos por workflow — muito acima do volume atual). Fica no Brevo. Revisitar essa decisão separadamente do radar caso um limite específico volte a ser um bloqueio real.
@@ -72,8 +78,7 @@ Qualificação em duas etapas, pra não gastar leitura funda (e token) em candid
 
 1. Não é cliente atual (`data/clientes-atuais.json`)?
 2. Não está em `data/nao-contatar.json`?
-3. **Não é contato já existente no Brevo** — checagem por domínio/e-mail via API do Brevo antes de prosseguir. Se já existe (de qualquer lista, não só da campanha atual), descarta aqui — não repete trabalho de qualificação em quem já está na base.
-4. Passa num descarte rápido por título/snippet de busca (nicho obviamente errado, tipo "loja de tecido")?
+3. Passa num descarte rápido por título/snippet de busca (nicho obviamente errado, tipo "loja de tecido")?
 
 Só quem sobrevive à Etapa 1 avança pra leitura funda.
 
@@ -81,7 +86,8 @@ Só quem sobrevive à Etapa 1 avança pra leitura funda.
 
 1. É do nicho certo (solar/fotovoltaico ou industrial-agro-bebidas conforme o perfil buscado)?
 2. Tem sinal de operação física recorrente (estoque, CD, expedição, catálogo de produtos, atendimento B2B, entrega regional/nacional)?
-3. Porte e região batem com o perfil (polos de preferência do Perfil A; rotas PR-MG-SP-RJ-DF do Perfil B)?
+3. Porte e região batem com o perfil (polos de preferência do Perfil A; rotas Sul-Sudeste do Perfil B)? Para o Perfil B, registrar explicitamente se o candidato está em cobertura direta da filial PR (PR/SP/SC/MS) ou fora dela (MG/RJ/DF/outros) — nesse segundo caso, "Próxima ação" deve incluir "Solicitar cotação antecipada à filial PR antes de fechar".
+4. **Assim que um e-mail de contato for identificado na leitura do site, checar contra o Brevo com `BrevoClient.findContactByEmail` (já existe em `src/panel/brevo-client.ts`) antes de finalizar a qualificação.** A API do Brevo só permite busca por e-mail/telefone exato — não há busca por domínio — por isso essa checagem não entra na Etapa 1 (não há e-mail ainda nesse ponto). Se o contato já existir no Brevo (de qualquer lista, não só da campanha "Armazenagem PE"), descarta sem escrever entrada em `leads-qualificados.md`.
 
 Só depois disso os critérios de `regras-score.md` são aplicados para estimar potencial e definir o registro em `leads-qualificados.md`, `leads-brutos.md` (pendente de mais info) ou `leads-descartados.md`.
 
@@ -91,11 +97,11 @@ Sem CLI para lembrar de rodar. O fluxo passa a ser conversacional:
 
 1. Nicolas pede um lote por perfil e critério (ex: "10 leads de distribuidora solar no Nordeste" ou "leads de indústria de bebidas no PR/SC").
 2. A descoberta roda a partir das fontes estruturadas do perfil pedido (+ WebSearch se necessário).
-3. Cada candidato é lido e qualificado conforme a seção acima.
-4. Os registros são gravados diretamente nos arquivos `leads/*.md` existentes, no formato já validado.
-5. Nicolas revisa o lote antes de qualquer contato (a revisão humana continua obrigatória — isso não muda).
+3. Cada candidato é lido e qualificado conforme a seção acima (Etapa 1 → Etapa 2, incluindo a checagem Brevo por e-mail).
+4. Os registros aprovados na leitura são gravados em dois lugares, no mesmo passo: a entrada legível em `leads/*.md` (formato já validado) e a entrada equivalente em `data/fila-revisao.json` no formato `ReviewLead[]` — isso é o que alimenta o painel Brevo existente sem exigir mudança nele.
+5. Nicolas revisa o lote antes de qualquer contato (a revisão humana continua obrigatória — isso não muda) e aprova pelo painel (`radar:painel`) ou por `data/aprovacoes-revisao.json` + `radar:registrar-aprovados`, como já funcionava.
 
-Isso elimina a fila de revisão intermediária (`data/fila-revisao.json`) e o painel de "aprovações" separado do painel Brevo — a revisão acontece direto nos arquivos de leads, que já têm o campo `Status`.
+Elimina-se apenas o **pipeline automatizado** que gerava `data/fila-revisao.json` (scraping → score → `review-queue.ts`) — o arquivo e o fluxo de aprovação em si continuam existindo, só passam a ser alimentados pela qualificação por IA em vez de código heurístico.
 
 ## Validação de precisão (critério de aceite)
 
@@ -117,7 +123,8 @@ O rewrite só é considerado pronto quando:
 
 ## Próxima etapa após aprovação
 
-1. Criar `inteligencia/fontes-estruturadas-solar.md` e `inteligencia/fontes-estruturadas-industrial.md`
-2. Remover o código e os artefatos de dados listados em "O que é descartado"
+1. Remover o código e os artefatos de dados listados em "O que é descartado" (`src/collectors`, `src/analysis`, `src/config/keywords.ts`, `src/config/score-rules.ts`, `src/review/review-queue.ts`, `src/contracts/discovery-provider.ts`, `src/contracts/search-provider.ts`, comandos correspondentes em `package.json`/`src/cli.ts`, artefatos em `data/`), e trimar `src/contracts/lead-types.ts` para os tipos ainda usados
+2. Criar `inteligencia/fontes-estruturadas-solar.md` e `inteligencia/fontes-estruturadas-industrial.md` com fontes reais e verificáveis
 3. Atualizar `README.md` e `contexto/objetivo.md` para refletir os dois perfis e o fluxo sob demanda
-4. Rodar o lote piloto de validação de precisão descrito acima
+4. Atualizar `contexto/clientes-espelho.md` e `inteligencia/nichos-prioritarios.md` para incluir o Perfil B
+5. Rodar o lote piloto de validação de precisão descrito acima, escrevendo em `leads/*.md` e `data/fila-revisao.json`
