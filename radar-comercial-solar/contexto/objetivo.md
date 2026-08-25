@@ -1,6 +1,6 @@
 # Objetivo
 
-Construir um radar comercial para identificar empresas do nicho solar/fotovoltaico com potencial de contratar serviços da Phenyx Logística.
+Construir um radar comercial para identificar empresas dos nichos solar/fotovoltaico e industrial/agro/bebidas (Perfil A e Perfil B — ver seção "Escopo" abaixo) com potencial de contratar serviços da Phenyx Logística.
 
 ## Pergunta central
 
@@ -41,7 +41,5 @@ Perfil B (industrial/agro/bebidas) já é foco atual — ver seção Escopo acim
 
 ## Fora do escopo desta fase
 
-- Disparo automatizado
-- Integração com CRM ou Brevo
-- Frontend
+- Disparo automatizado (envio agendado/em lote sem gatilho humano — o envio via painel Brevo é sempre disparado manualmente por uma pessoa)
 - Scraping ou automação pesada
