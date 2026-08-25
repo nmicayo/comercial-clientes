@@ -38,28 +38,28 @@ Como no Perfil A, complementei fortemente com **busca dirigida por nicho + regi�
 
 ## 2. Tally completo — Perfil B
 
-**Total de empresas investigadas: 20**, todas registradas em algum arquivo `leads/*.md` (nenhuma foi descartada silenciosamente).
+**Total de empresas investigadas: 20**, das quais **19 foram registradas** em algum arquivo `leads/*.md` e 1 foi corretamente excluída do registro por motivo legítimo (ver seção 2.5).
 
-### 2.1 Candidatos registrados (20)
+### 2.1 Candidatos registrados (19)
 
 | Status | Qtd | Empresas |
 |---|---:|---|
 | Qualificado | 12 | Integrada Cooperativa Agroindustrial, Cooperativa Agrária Agroindustrial, Coagro Cooperativa Agroindustrial, Polinutri Alimentos, Agrozacca Alimentos, Incapack, Grupo New Pet, Companhia Müller de Bebidas, Refrigerantes Convenção, Volplast, Laticínios Porto Alegre, Itambé Alimentos |
 | Em análise / brutos (Aguardando validação) | 4 | C.Vale Cooperativa Agroindustrial, Copasul, Grupo Thoquino, Cervejaria Ashby |
-| Descartado | 4 | Montenegro Indústria, Dubar, IBP - Indústria de Bebidas Paris, DVA Atacados |
+| Descartado | 3 | Dubar, IBP - Indústria de Bebidas Paris, DVA Atacados |
 
 ### 2.2 Discarded/pendentes na Etapa 1 (filtro barato) vs Etapa 2 (leitura real do site)
 
 **Etapa 1 (checagem contra `data/clientes-atuais.json` e `data/nao-contatar.json`, e triagem de ruído óbvio antes de ler o site): zero descartes.** Nenhum dos 20 candidatos coincidiu com os 4 registros de `clientes-atuais.json` (Fotus, Gradiente Solar, Mazer, CMT Energia 2) nem com os registros de `nao-contatar.json`. Nenhum candidato foi descartado por ruído óbvio de nicho (tipo "loja de tecido") — todos os 20 eram, à primeira vista, plausivelmente indústria/agro/bebidas. Isso repete o padrão observado no Perfil A e é evidência adicional de que a descoberta por fonte estruturada + busca dirigida por nicho produz um funil muito mais limpo que o scraping cego anterior.
 
-**Etapa 2 (leitura real do site): todos os 20 casos de "não qualificado" (4 brutos + 4 descartados) aconteceram aqui**, por 3 categorias de motivo:
+**Etapa 2 (leitura real do site): todos os 20 casos de "não qualificado ou não registrado" (4 brutos + 3 descartados + 1 corretamente excluído do registro) aconteceram aqui**, por 4 categorias de motivo:
 
 - **Bloqueio técnico de acesso ao site (3 casos → Aguardando validação, não descarte de mérito)**: C.Vale (403 em `cvalealimentos.com.br`, ECONNREFUSED em `cv.ind.br`), Copasul (ECONNREFUSED em `copasul.agr.br`, 2 tentativas), Grupo Thoquino (ECONNRESET em `thoquino.com.br`, 2 tentativas). Em todos os três casos, evidência de terceiros (busca) sugere candidatos fortes, mas a exigência de leitura direta do site não pôde ser cumprida — registrados como pendentes, não qualificados nem descartados sem essa confirmação, seguindo o mesmo critério usado no Perfil A para Império Energia Solar/GruPower/3AS Energia Solar.
 - **Sinal de contato insuficiente após leitura real bem-sucedida (1 caso → Aguardando validação)**: Cervejaria Ashby — site lido com sucesso, produto físico e operação real confirmados, mas sem e-mail comercial localizado e porte aparentemente menor (cervejaria artesanal de planta única) — registrada como pendente de validação de contato, não descartada nem qualificada plenamente.
-- **Descarte de mérito após leitura real (4 casos)**:
-  - **Desalinhamento geográfico** (1): Montenegro Indústria — fabricante real de embalagens PET, mas sede/fábrica em Vila Velha/ES, fora de qualquer UF-alvo do Perfil B (PR/SP/SC/MS diretas, MG/RJ/DF cotação antecipada).
+- **Descarte de mérito após leitura real (3 casos)**:
   - **Sem site institucional localizável** (2): Dubar (subsidiária real de grupo internacional, fábrica confirmada por notícia recente, mas nenhum site/e-mail próprio localizado — mesmo padrão do descarte de Alvipex Distribuidora no Perfil A) e DVA Atacados (22 filiais segundo CNPJ, mas nenhum site institucional, contato apenas via e-mail pessoal em Gmail — mesmo padrão do descarte de ATC Energia Solar no Perfil A).
   - **Risco financeiro confirmado** (1): IBP - Indústria de Bebidas Paris — processo formal de recuperação judicial confirmado por múltiplas fontes de registro, combinado com ausência de contato comercial no site. Este é um motivo de descarte novo em relação ao Perfil A (não apareceu no lote solar), mas é um critério de prudência comercial legítimo para um radar de prospecção B2B.
+- **Corretamente excluído do registro — sede fora de qualquer UF-alvo do Perfil B (1 caso, não entrou em `leads/*.md`)**: Montenegro Indústria — fabricante real de embalagens PET, mas sede/fábrica em Vila Velha/ES, fora de qualquer UF-alvo do Perfil B (PR/SP/SC/MS diretas, MG/RJ/DF cotação antecipada). Diferente dos 3 descartes acima, este caso não foi registrado em `leads/leads-descartados.md` — ver seção 2.5 para o motivo e o precedente aplicado.
 
 ### 2.3 Taxa de qualificação mais alta que no Perfil A — por quê
 
@@ -68,7 +68,7 @@ O Perfil B teve 12/20 (60%) qualificados, contra 4/30 (13%) no Perfil A. Isso n�
 1. **As buscas dirigidas usadas no Perfil B já eram pré-filtradas por termos como "cooperativa agroindustrial", "fábrica de", "indústria de"**, que naturalmente retornam fabricantes/cooperativas estabelecidos, e não instaladoras/prestadoras de serviço pequenas (que dominavam o ruído de "energia solar" genérico no Perfil A).
 2. **O setor industrial/agro/bebidas tem, em geral, presença web mais madura e estruturada** (sites institucionais completos, CDs/fábricas documentadas) que pequenas instaladoras solares regionais.
 
-Ainda assim, a Etapa 2 encontrou e descartou/pendurou 8 dos 20 candidatos por motivos de mérito reais (geografia errada, sem contato verificável, risco financeiro, ou bloqueio técnico) — não é um "aprova tudo".
+Ainda assim, a Etapa 2 encontrou e descartou/pendurou/excluiu 8 dos 20 candidatos por motivos de mérito reais (geografia errada, sem contato verificável, risco financeiro, ou bloqueio técnico) — não é um "aprova tudo".
 
 ### 2.4 Candidatos já em `data/clientes-atuais.json` ou já contatos Brevo (Perfil B)
 
@@ -86,6 +86,14 @@ Ainda assim, a Etapa 2 encontrou e descartou/pendurou 8 dos 20 candidatos por mo
 | faleconosco@laticiniosportoalegre.com.br | Laticínios Porto Alegre |
 
 (Coagro, Companhia Müller de Bebidas, Refrigerantes Convenção, Volplast e Itambé Alimentos não têm e-mail comercial genérico confirmado — apenas telefone/formulário — então não há e-mail para checar nesses 5 casos.)
+
+### 2.5 Encontrado mas corretamente NÃO registrado (1)
+
+| Motivo | Qtd | Empresas |
+|---|---:|---|
+| Empresa real, mas sede fora de qualquer UF-alvo do Perfil B (Vila Velha/ES) | 1 | Montenegro Indústria (montenegroindustria.com.br) |
+
+Não entrou em `leads/leads-descartados.md` nem em `data/fila-revisao.json` — mesmo padrão usado no Perfil A para os 5 casos de "distribuidora solar real, mas sede fora do Nordeste" (seção 2.3 do `task-10-perfil-a-report.md`). Nenhum rótulo de região `fase: 1` em `data/regioes.json` cobre o Espírito Santo (as duas opções do Perfil B cobrem apenas PR/SP/SC/MS diretas ou MG/RJ/DF cotação antecipada); inventar um rótulo novo cobriria apenas este caso isolado e poluiria o vocabulário real de regiões do painel para um único caso fora de escopo. Uma sessão anterior havia registrado esta empresa em `leads/leads-descartados.md` com um `Região:` forçado a conformar ao vocabulário controlado (`Sul-Sudeste (Perfil B) — cobertura direta PR`), o que era factualmente incorreto (ES não é coberto por nenhum dos dois rótulos, e o próprio corpo da entrada dizia isso explicitamente) e contradizia a si mesma. A correção foi tratar o caso pelo precedente do Perfil A: candidato encontrado, avaliado e corretamente excluído por estar fora da área geográfica-alvo, mas nunca registrado em nenhum arquivo `leads/*.md` — porque `leads/leads-descartados.md` nunca é carregado em `data/fila-revisao.json` nem no painel de aprovação, a restrição de rótulo de região (cujo propósito é impedir que o filtro Fase-1 do painel esconda leads silenciosamente) simplesmente não alcança este arquivo.
 
 ## 3. Lista de qualificados com justificativa (Perfil B, 12)
 
@@ -138,10 +146,10 @@ Fonte: `docs/superpowers/specs/2026-08-24-radar-comercial-rewrite-design.md`, se
 
 - `leads/leads-qualificados.md` — 12 novas entradas
 - `leads/leads-brutos.md` — 4 novas entradas
-- `leads/leads-descartados.md` — 4 novas entradas
+- `leads/leads-descartados.md` — 3 novas entradas (Montenegro Indústria foi encontrada mas corretamente excluída do registro — ver seção 2.5 — não conta como entrada nova)
 - `data/fila-revisao.json` — 12 novas entradas `ReviewLead` (as 12 qualificadas), ranks 130–141 (total do arquivo passou de 129 para 141 entradas). 10 entradas com `region: "Sul-Sudeste (Perfil B) — cobertura direta PR"`, 2 com `"Sul-Sudeste (Perfil B) — cotação antecipada PR"`, ambas verbatim conforme `data/regioes.json`.
 
-Todas as 20 entradas registradas (qualquer status) têm a linha `Região: Sul-Sudeste (Perfil B) — cobertura direta PR` ou `— cotação antecipada PR` nos arquivos Markdown, exceto os 2 descartes fora do escopo geográfico do Perfil B (Montenegro Indústria, DVA Atacados), cujo campo `Região` documenta explicitamente por que não se encaixam em nenhum dos dois rótulos.
+Todas as 19 entradas registradas (qualquer status) têm a linha `Região: Sul-Sudeste (Perfil B) — cobertura direta PR` ou `— cotação antecipada PR` nos arquivos Markdown, conforme o vocabulário controlado de `data/regioes.json` (inclusive DVA Atacados, cujo `Região:` foi corrigido para `— cotação antecipada PR` no Fix round 1 — ver `task-10-perfil-b-report.md`). Montenegro Indústria foi encontrada mas corretamente excluída do registro (sede em Vila Velha/ES, fora de qualquer UF-alvo do Perfil B) — não entrou em nenhum arquivo `leads/*.md`, então não há linha `Região:` para conformar; ver seção 2.5.
 
 `git add` não foi necessário para `leads/` e `data/` (gitignored, conforme esperado) — confirmado por releitura direta dos arquivos no disco.
 
@@ -152,8 +160,8 @@ Todas as 20 entradas registradas (qualquer status) têm a linha `Região: Sul-Su
 | Investigados | 30 | 20 | 50 |
 | Qualificados | 4 | 12 | 16 |
 | Em análise/brutos | 4 | 4 | 8 |
-| Descartados | 8 | 4 | 12 |
-| Excluídos antes do registro (cliente atual, duplicata, fora de área, sem web) | 14 | 0 | 14 |
+| Descartados | 8 | 3 | 11 |
+| Excluídos antes do registro (cliente atual, duplicata, fora de área, sem web) | 14 | 1 | 15 |
 | Descartes por ruído óbvio na Etapa 1 | 0 | 0 | 0 |
 | Checagens Brevo confirmadas | 7/7 | 0/7 (bloqueio de IP) | 7/14 |
 
