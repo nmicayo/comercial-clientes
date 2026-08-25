@@ -89,3 +89,66 @@ Informações pendentes:
 - Tipo de operação
 - O que compra/vende
 - Como usa logística
+
+---
+
+## Ambev
+
+Tipo de empresa:
+- Indústria de bebidas (cervejas e refrigerantes)
+
+Possíveis características:
+- Produção e distribuição em larga escala
+- Múltiplas plantas industriais, rotas recorrentes entre fábrica e distribuidores/atacadistas
+- Alto volume de frete fracionado e dedicado
+
+Por que é um bom cliente espelho:
+- Cliente real confirmado pelos dados de operação (relatório SSW, período 01/08–24/08/2026)
+- Operação recorrente com produto físico em alto volume
+- Rotas Sul-Sudeste (Perfil B)
+
+---
+
+## Coamo Agroindustrial
+
+Tipo de empresa:
+- Cooperativa agroindustrial
+
+Possíveis características:
+- Distribuição de insumos e produtos agrícolas
+- Rotas recorrentes entre cooperativa e atacadistas/distribuidores
+- Operação capilar dentro do estado do Paraná e vizinhos
+
+Por que é um bom cliente espelho:
+- Cliente real confirmado pelos dados de operação
+- Perfil de cooperativa agro — ver fonte OCB em `inteligencia/fontes-estruturadas-industrial.md`
+
+---
+
+## Owens-Illinois / Crown Embalagens
+
+Tipo de empresa:
+- Indústria de embalagens (vidro/metal) para bebidas e alimentos
+
+Possíveis características:
+- Fornecimento recorrente para indústrias de bebidas/alimentos
+- Rotas fixas entre planta industrial e cliente final
+
+Por que é um bom cliente espelho:
+- Cliente real confirmado pelos dados de operação
+- Indica que fornecedores da cadeia de bebidas/alimentos (não só as marcas finais) também são alvo válido
+
+---
+
+## Trigobel / Camil / Spal Indústria / HNK BR Indústria
+
+Tipo de empresa:
+- Indústria de alimentos, bebidas e nutrição animal
+
+Possíveis características:
+- Operação recorrente com produto físico
+- Rotas Sul-Sudeste, múltiplos CTRCs por mês por cliente
+
+Por que é um bom cliente espelho:
+- Clientes reais confirmados pelos dados de operação
+- Ver nota sobre alimentício/armazenagem em `inteligencia/fontes-estruturadas-industrial.md` — são clientes de transporte, não de armazenagem

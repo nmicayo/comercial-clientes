@@ -20,65 +20,6 @@ export type LogisticSignal = {
   points: number;
 };
 
-export type GeneratedSearch = {
-  id: string;
-  query: string;
-  niche: string;
-  region: string;
-  keyword: string;
-  locationTerm?: string;
-};
-
-export type DiscoveredCandidate = {
-  id: string;
-  query: string;
-  niche: string;
-  region: string;
-  sourceType: DiscoverySourceType;
-  provider: string;
-  sourceConfidence: number;
-  title: string;
-  url: string;
-  snippet?: string;
-  companyNameGuess?: string;
-  city?: string;
-  state?: string;
-  directoryDomain?: string;
-  flags: string[];
-  mockResolvedWebsite?: string;
-  mockCompanyName?: string;
-  mockCity?: string;
-  mockState?: string;
-  mockContactEmail?: string;
-  mockContactPhone?: string;
-  mockPrimerText?: string;
-  mockCandidateHtml?: string;
-};
-
-export type ResolvedSiteCandidate = {
-  id: string;
-  query: string;
-  niche: string;
-  region: string;
-  sourceType: DiscoverySourceType;
-  provider: string;
-  sourceConfidence: number;
-  resolutionConfidence: number;
-  title: string;
-  candidateUrl: string;
-  officialWebsite?: string;
-  companyName: string;
-  snippet?: string;
-  city?: string;
-  state?: string;
-  contactEmail?: string;
-  contactPhone?: string;
-  summaryText?: string;
-  pagesRead: string[];
-  pageFlags: string[];
-  flags: string[];
-};
-
 export type RawLead = {
   id: string;
   source: string;

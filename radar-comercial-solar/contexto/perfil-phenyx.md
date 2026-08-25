@@ -36,3 +36,4 @@ Este arquivo resume como a Phenyx Logística deve ser interpretada dentro do rad
 - Se a empresa só atua com serviço financeiro ou assinatura, a prioridade cai
 - Se houver sinais claros de estoque, distribuição ou expedição, a prioridade sobe
 - Se houver atuação próxima de Cabo de Santo Agostinho, Maringá ou Barueri/Alphaville, o lead ganha relevância operacional
+- Perfil B (indústria/agro/bebidas) é atendido pela filial Maringá/PR, que não tem cobertura nacional: atendimento direto é PR/SP/SC/MS; candidatos em outros estados continuam válidos, mas precisam de "cotação antecipada à filial PR" antes de fechar — essa regra não se aplica ao Perfil A (filial PE tem cobertura própria já validada no Nordeste)

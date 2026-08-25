@@ -81,6 +81,8 @@ radar-comercial-solar/
 ├─ README.md
 ├─ contexto/
 ├─ inteligencia/
+│  ├─ fontes-estruturadas-solar.md
+│  └─ fontes-estruturadas-industrial.md
 ├─ leads/
 ├─ prompts/
 └─ templates/
@@ -129,183 +131,23 @@ A Parte 1 é aceita quando:
 - Ajustar score com base em respostas do time comercial
 - Evoluir para semiautomação somente depois de validar o fluxo manual
 
-## Pipeline V1
+## Fluxo atual (rewrite 2026-08-24)
 
-A Parte 2 V1 adiciona um pipeline híbrido em TypeScript com persistência em JSON.
+Não há mais pipeline automatizado de descoberta. O fluxo é sob demanda, guiado por uma sessão de IA (ver `docs/superpowers/specs/2026-08-24-radar-comercial-rewrite-design.md`):
 
-Princípios:
+1. Peça um lote por perfil (ex: "10 leads de distribuidora solar no Nordeste" ou "leads de indústria de bebidas no PR/SC").
+2. A descoberta parte das fontes estruturadas em `inteligencia/fontes-estruturadas-solar.md` (Perfil A) ou `inteligencia/fontes-estruturadas-industrial.md` (Perfil B), complementada por WebSearch dirigido quando necessário.
+3. Cada candidato passa pelo filtro barato (cliente atual? não-contatar? nicho óbvio errado?) e só depois pela leitura funda do site + checagem Brevo por e-mail.
+4. Resultados aprovados são gravados em `leads/*.md` e em `data/fila-revisao.json` (mesmo formato `ReviewLead[]` que o painel já consome).
+5. Revisão humana continua obrigatória antes de qualquer contato — aprove pelo painel (`npm run radar:painel`) ou por `data/aprovacoes-revisao.json` + `npm run radar:registrar-aprovados`.
 
-- Contratos claros em `src/`
-- Persistência conferível em `data/`
-- CLI simples para cada etapa
-- Sem API real de busca nesta fase
-- Sem frontend, Brevo ou disparo
+## Comandos restantes
 
-### Estado atual da Parte 3
-
-A Parte 3 V1 já adiciona captação automática híbrida com algumas heurísticas práticas.
-
-Hoje o comportamento real é este:
-
-- `Bing` funciona como fonte principal de descoberta pública
-- `DuckDuckGo` continua tentado como fonte auxiliar, mas pode responder com challenge anti-bot
-- a descoberta já bloqueia anúncios, redirects, marketplaces e hubs/listagens mais óbvios
-- a resolução de site oficial ainda é heurística e precisa de revisão humana depois
-- o score continua priorizando evidência de operação recorrente com produto físico
-
-Em outras palavras: a descoberta automática já ajuda a reduzir bastante o trabalho manual, mas ainda não substitui validação comercial.
-
-### Estrutura nova
-
-- `data/keywords.json`
-- `data/regioes.json`
-- `data/buscas-geradas.json`
-- `data/resultados-brutos.json`
-- `data/sites-analisados.json`
-- `data/leads-pontuados.json`
-- `data/fila-revisao.json`
-- `data/exemplos/resultados-brutos.exemplo.json`
-- `data/resultados-descoberta.json`
-- `data/sites-resolvidos.json`
-- `data/exemplos/resultados-descoberta.exemplo.json`
-- `src/cli.ts`
-
-### Comandos
-
-Executar na pasta `radar-comercial-solar/`:
-
-```bash
-npm run radar:gerar-buscas
-npm run radar:descobrir
-npm run radar:resolver-sites
-npm run radar:captar
-npm run radar:captar-hibrido
-npm run radar:analisar-sites
-npm run radar:pontuar
-npm run radar:revisar
-npm run radar:rodar-v1
-npm run radar:rodar-hibrido
-npm run radar:registrar-aprovados
-```
-
-### O que cada comando faz
-
-- `radar:gerar-buscas`: cruza nichos, palavras-chave e regiões
-- `radar:descobrir`: tenta descobrir empresas via busca pública, registra bloqueios de engine e também aceita fixture
-- `radar:resolver-sites`: tenta confirmar site oficial, ler páginas-chave e enriquecer os candidatos
-- `radar:captar`: lê resultados manuais ou simulados, normaliza e deduplica
-- `radar:captar-hibrido`: normaliza os sites resolvidos para o contrato de `resultados-brutos.json`
-- `radar:analisar-sites`: usa mock de site ou tenta ler URL quando houver
-- `radar:pontuar`: extrai sinais e aplica score
-- `radar:revisar`: gera fila final de validação humana
-- `radar:rodar-v1`: executa `captar -> analisar-sites -> pontuar -> revisar` e mostra um resumo consolidado
-- `radar:rodar-hibrido`: executa `descobrir -> resolver-sites -> captar-hibrido -> analisar-sites -> pontuar -> revisar`
 - `radar:registrar-aprovados`: lê aprovações manuais e registra os itens aprovados nos arquivos `leads/*.md`
-
-### Como testar sem busca externa
-
-1. Rode `npm run radar:gerar-buscas`.
-2. Para testar com mock completo e deduplicação, rode:
-
-```bash
-npm run radar:rodar-v1 -- --input=data/exemplos/resultados-brutos.exemplo.json
-```
-
-   Ou edite manualmente `data/resultados-brutos.json` e rode as etapas separadas.
-3. Confira os arquivos gerados em `data/`.
-
-### Como testar a Parte 3 sem depender da web
-
-1. Rode `npm run radar:gerar-buscas`.
-2. Rode o fluxo híbrido com o fixture de descoberta:
-
-```bash
-npm run radar:rodar-hibrido -- --input=data/exemplos/resultados-descoberta.exemplo.json
-```
-
-3. Confira os artefatos:
-
-- `data/resultados-descoberta.json`
-- `data/sites-resolvidos.json`
-- `data/resultados-brutos.json`
-- `data/sites-analisados.json`
-- `data/leads-pontuados.json`
-- `data/fila-revisao.json`
-
-Esse modo é útil para validar o pipeline completo quando você não quiser depender de rede ou de busca externa no momento.
-
-### Como tentar a descoberta automática real
-
-Para usar a descoberta automática sem fixture:
-
-```bash
-npm run radar:gerar-buscas
-npm run radar:descobrir -- --max-searches=6 --per-source-limit=5
-npm run radar:resolver-sites
-npm run radar:captar-hibrido
-npm run radar:analisar-sites
-npm run radar:pontuar
-npm run radar:revisar
-```
-
-Ou em fluxo único:
-
-```bash
-npm run radar:rodar-hibrido -- --max-searches=6 --per-source-limit=5
-```
-
-Observações:
-
-- a V1 usa `Bing` como base prática de descoberta e tenta `DuckDuckGo` como fonte auxiliar
-- quando o `DuckDuckGo` bloquear com challenge, isso aparece explicitamente no resumo
-- a descoberta real depende de acesso à web no ambiente em que o comando for executado
-- o sistema limita o volume por consulta para não virar um crawler agressivo
-- o sistema já descarta anúncios, redirects, marketplaces e agregadores/hubs óbvios
-- quando não houver confiança suficiente, o lead segue com flags como `site_nao_confirmado`, `empresa_ambigua` ou `dados_ralos`
-
-### O que a descoberta já filtra
-
-Na calibragem atual, `radar:descobrir` já tenta remover cedo:
-
-- anúncios e redirects como `duckduckgo.com/y.js` e wrappers promocionais
-- marketplaces como `Mercado Livre`, `Amazon`, `Shopee`, `OLX` e similares
-- títulos promocionais como `Compre agora` ou `Melhores Ofertas`
-- hubs/listagens como páginas de `melhores empresas`, comparadores e agregadores não-oficiais
-- resultados genéricos sem aderência mínima ao nicho solar/fotovoltaico
-
-Isso reduz ruído antes mesmo da resolução de site oficial.
-
-### Limites atuais da descoberta
-
-Mesmo com a limpeza atual, ainda existem limites conhecidos:
-
-- alguns títulos ainda chegam genéricos demais e exigem melhor extração do nome real da empresa
-- parte dos resultados ainda pode se concentrar em uma query/região mais forte que as demais
-- a confirmação do site oficial ainda é baseada em heurística, não em integração confiável de API
-- a revisão humana continua obrigatória antes de registrar ou abordar qualquer lead
-
-### Executar etapa por etapa
-
-Se preferir inspecionar o pipeline com mais granularidade:
-
-```bash
-npm run radar:captar -- --input=data/exemplos/resultados-brutos.exemplo.json
-npm run radar:analisar-sites
-npm run radar:pontuar
-npm run radar:revisar
-```
-
-### Resumo no terminal
-
-Cada comando imprime um resumo simples, como:
-
-- buscas geradas
-- candidatos descartados por política
-- buscas bloqueadas por challenge
-- leads captados
-- sites analisados
-- leads pontuados
-- itens enviados para fila de revisão
+- `radar:listar-aprovados` / `radar:enviar-aprovados`: fluxo de envio para o Brevo
+- `radar:aberturas`: consulta estatísticas de abertura no Brevo
+- `radar:auditar-brevo`: auditoria pontual do estado do Brevo
+- `radar:painel`: painel local de aprovação (ver seção "Painel local de aprovação Brevo" abaixo)
 
 ### Auditoria pontual do Brevo
 
