@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "test": "node --experimental-strip-types --test scripts/fonte-cnpj/*.test.ts",
     "radar:registrar-aprovados": "node --experimental-strip-types src/cli.ts radar:registrar-aprovados",
     "radar:listar-aprovados": "node --env-file=.env --experimental-strip-types src/cli.ts radar:listar-aprovados",
     "radar:enviar-aprovados": "node --env-file=.env --experimental-strip-types src/cli.ts radar:enviar-aprovados",
