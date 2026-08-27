@@ -1,0 +1,30 @@
+{
+  "_aviso": "Ponto de partida, NÃO conferido código a código. Validar em https://concla.ibge.gov.br/busca-online-cnae.html antes de rodar o filtro de verdade.",
+
+  "perfil_a": {
+    "label": "Solar/Fotovoltaico",
+    "ufs": ["PE", "BA", "MA", "RN", "PB", "CE", "SE", "AL"],
+    "cnaes": [
+      "3511501",
+      "4321500",
+      "4322301",
+      "4669999",
+      "4661300",
+      "4759801"
+    ]
+  },
+
+  "perfil_b": {
+    "label": "Industrial/Agro/Bebidas",
+    "ufs": ["PR", "SP", "SC", "MS", "MG", "RJ", "DF"],
+    "cnaes": [
+      "1113502",
+      "1113501",
+      "1122401",
+      "0161003",
+      "4623108",
+      "1091102",
+      "1096101"
+    ]
+  }
+}
