@@ -29,16 +29,16 @@ async function loadMunicipios(filePath: string): Promise<Map<string, string>> {
   return map;
 }
 
-async function loadEmpresas(filePath: string): Promise<Map<string, EmpresaInfo>> {
-  const map = new Map<string, EmpresaInfo>();
-  if (!filePath || !existsSync(filePath)) return map;
+async function loadEmpresas(filePath: string): Promise<Record<string, EmpresaInfo>> {
+  const obj: Record<string, EmpresaInfo> = {};
+  if (!filePath || !existsSync(filePath)) return obj;
   const rl = createInterface({ input: createReadStream(filePath, { encoding: "latin1" }) });
   for await (const line of rl) {
     if (!line.trim()) continue;
     const [cnpjBasico, info] = parseEmpresaLine(line);
-    map.set(cnpjBasico, info);
+    obj[cnpjBasico] = info;
   }
-  return map;
+  return obj;
 }
 
 async function main() {
@@ -98,9 +98,9 @@ async function main() {
 
     matched++;
     const cnpj = `${row.cnpjBasico}${row.cnpjOrdem}${row.cnpjDv}`;
-    const empresa = empresas.get(row.cnpjBasico);
+    const empresa = empresas[row.cnpjBasico];
     const municipioNome = municipios.get(row.municipioCodigo) ?? row.municipioCodigo;
-    const agregado = agregacao.get(row.cnpjBasico);
+    const agregado = agregacao[row.cnpjBasico];
 
     buffer.push(
       [

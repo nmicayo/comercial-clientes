@@ -126,18 +126,18 @@ export interface AgregadoEmpresa {
 // suficiente, sem precisar juntar os 10 arquivos.
 export async function buildAgregacaoFiliais(
   linhas: AsyncIterable<string>
-): Promise<Map<string, AgregadoEmpresa>> {
-  const map = new Map<string, AgregadoEmpresa>();
+): Promise<Record<string, AgregadoEmpresa>> {
+  const obj: Record<string, AgregadoEmpresa> = {};
   for await (const line of linhas) {
     if (!line.trim()) continue;
     const row = parseEstabelecimentoLine(line);
     if (row.situacaoCadastral !== ATIVA) continue;
-    const atual = map.get(row.cnpjBasico) ?? { filiaisAtivas: 0, dataAberturaMatriz: "" };
+    const atual = obj[row.cnpjBasico] ?? { filiaisAtivas: 0, dataAberturaMatriz: "" };
     atual.filiaisAtivas++;
     if (row.identificadorMatrizFilial === "1") {
       atual.dataAberturaMatriz = row.dataInicioAtividade;
     }
-    map.set(row.cnpjBasico, atual);
+    obj[row.cnpjBasico] = atual;
   }
-  return map;
+  return obj;
 }

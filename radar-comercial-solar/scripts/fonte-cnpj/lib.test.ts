@@ -95,8 +95,8 @@ test("buildAgregacaoFiliais conta filiais ativas por CNPJ básico e guarda data 
   ];
   const agregacao = await buildAgregacaoFiliais(linhasDeTeste(linhas));
 
-  assert.equal(agregacao.get("11111111")?.filiaisAtivas, 2);
-  assert.equal(agregacao.get("11111111")?.dataAberturaMatriz, "20150610");
-  assert.equal(agregacao.get("22222222")?.filiaisAtivas, 1);
-  assert.equal(agregacao.get("22222222")?.dataAberturaMatriz, "20220301");
+  assert.equal(agregacao["11111111"]?.filiaisAtivas, 2);
+  assert.equal(agregacao["11111111"]?.dataAberturaMatriz, "20150610");
+  assert.equal(agregacao["22222222"]?.filiaisAtivas, 1);
+  assert.equal(agregacao["22222222"]?.dataAberturaMatriz, "20220301");
 });
