@@ -112,3 +112,32 @@ export function parseEmpresaLine(line: string): [cnpjBasico: string, info: Empre
 }
 
 export const ATIVA = "02";
+
+export interface AgregadoEmpresa {
+  filiaisAtivas: number;
+  dataAberturaMatriz: string;
+}
+
+// Duas responsabilidades numa passada: contar estabelecimentos ativos por
+// empresa (matriz + filiais) e guardar a data de abertura da matriz, quando
+// a matriz também estiver ativa. Todos os estabelecimentos de uma empresa
+// compartilham o mesmo CNPJ_BASICO e, na prática, caem no mesmo arquivo
+// shard da Receita — por isso uma única passada sobre um arquivo já é
+// suficiente, sem precisar juntar os 10 arquivos.
+export async function buildAgregacaoFiliais(
+  linhas: AsyncIterable<string>
+): Promise<Map<string, AgregadoEmpresa>> {
+  const map = new Map<string, AgregadoEmpresa>();
+  for await (const line of linhas) {
+    if (!line.trim()) continue;
+    const row = parseEstabelecimentoLine(line);
+    if (row.situacaoCadastral !== ATIVA) continue;
+    const atual = map.get(row.cnpjBasico) ?? { filiaisAtivas: 0, dataAberturaMatriz: "" };
+    atual.filiaisAtivas++;
+    if (row.identificadorMatrizFilial === "1") {
+      atual.dataAberturaMatriz = row.dataInicioAtividade;
+    }
+    map.set(row.cnpjBasico, atual);
+  }
+  return map;
+}

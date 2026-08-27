@@ -8,6 +8,7 @@ import {
   parseEstabelecimentoLine,
   parseEmpresaLine,
   ATIVA,
+  buildAgregacaoFiliais,
 } from "./lib.ts";
 
 test("splitLine remove aspas e espaços de cada campo", () => {
@@ -75,4 +76,27 @@ test("parseEmpresaLine extrai cnpjBasico, razaoSocial, porte e capitalSocial", (
   assert.equal(info.razaoSocial, "EMPRESA X LTDA");
   assert.equal(info.porte, "05");
   assert.equal(info.capitalSocial, "1500000,00");
+});
+
+async function* linhasDeTeste(linhas: string[]): AsyncIterable<string> {
+  for (const l of linhas) yield l;
+}
+
+test("buildAgregacaoFiliais conta filiais ativas por CNPJ básico e guarda data de abertura da matriz", async () => {
+  const linhas = [
+    // matriz ativa, CNPJ 11111111
+    ['"11111111"', '"0001"', '"90"', '"1"', '""', `"${ATIVA}"`, '""', '""', '""', '""', '"20150610"', '"4321500"', '""', '""', '""', '""', '""', '""', '""', '"SP"', '"7107"', '""', '""', '""', '""', '""', '""', '""', '""', '""'].join(";"),
+    // filial ativa, mesmo CNPJ básico
+    ['"11111111"', '"0002"', '"01"', '"2"', '""', `"${ATIVA}"`, '""', '""', '""', '""', '"20190101"', '"4321500"', '""', '""', '""', '""', '""', '""', '""', '"PR"', '"7455"', '""', '""', '""', '""', '""', '""', '""', '""', '""'].join(";"),
+    // filial inativa (situação != 02), não deve contar
+    ['"11111111"', '"0003"', '"02"', '"2"', '""', '"08"', '""', '""', '""', '""', '"20200101"', '"4321500"', '""', '""', '""', '""', '""', '""', '""', '"MG"', '"4123"', '""', '""', '""', '""', '""', '""', '""', '""', '""'].join(";"),
+    // empresa diferente, uma matriz ativa
+    ['"22222222"', '"0001"', '"90"', '"1"', '""', `"${ATIVA}"`, '""', '""', '""', '""', '"20220301"', '"4669999"', '""', '""', '""', '""', '""', '""', '""', '"BA"', '"2927"', '""', '""', '""', '""', '""', '""', '""', '""', '""'].join(";"),
+  ];
+  const agregacao = await buildAgregacaoFiliais(linhasDeTeste(linhas));
+
+  assert.equal(agregacao.get("11111111")?.filiaisAtivas, 2);
+  assert.equal(agregacao.get("11111111")?.dataAberturaMatriz, "20150610");
+  assert.equal(agregacao.get("22222222")?.filiaisAtivas, 1);
+  assert.equal(agregacao.get("22222222")?.dataAberturaMatriz, "20220301");
 });
