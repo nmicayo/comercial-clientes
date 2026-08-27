@@ -1,29 +1,21 @@
-// Filtra a base pública de CNPJ (Receita Federal) por CNAE + UF, sem IA.
+// Filtra a base pública de CNPJ (Receita Federal) por CNAE, nacionalmente, sem IA.
 // Uso: ver scripts/fonte-cnpj/README.md
-import { createReadStream, existsSync, appendFileSync, writeFileSync } from "node:fs";
+import { createReadStream, existsSync, appendFileSync, writeFileSync, readFileSync } from "node:fs";
 import { createInterface } from "node:readline";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
+import {
+  parseArgs,
+  csvEscape,
+  matchesCnae,
+  parseEstabelecimentoLine,
+  parseEmpresaLine,
+  buildAgregacaoFiliais,
+  ATIVA,
+  type EmpresaInfo,
+} from "./lib.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
-type Args = Record<string, string>;
-
-function parseArgs(argv: string[]): Args {
-  const out: Args = {};
-  for (const raw of argv) {
-    const m = raw.match(/^--([^=]+)=(.*)$/);
-    if (m) out[m[1]] = m[2];
-  }
-  return out;
-}
-
-// Campos da Receita são separados por ";", cada campo entre aspas duplas.
-// Não há vírgulas/pontos-e-vírgulas escapados dentro de aspas nesses arquivos
-// na prática, então um split simples após remover aspas é suficiente.
-function splitLine(line: string): string[] {
-  return line.split(";").map((f) => f.replace(/^"|"$/g, "").trim());
-}
 
 async function loadMunicipios(filePath: string): Promise<Map<string, string>> {
   const map = new Map<string, string>();
@@ -31,29 +23,22 @@ async function loadMunicipios(filePath: string): Promise<Map<string, string>> {
   const rl = createInterface({ input: createReadStream(filePath, { encoding: "latin1" }) });
   for await (const line of rl) {
     if (!line.trim()) continue;
-    const [codigo, nome] = splitLine(line);
+    const [codigo, nome] = line.split(";").map((f) => f.replace(/^"|"$/g, "").trim());
     if (codigo) map.set(codigo, nome);
   }
   return map;
 }
 
-async function loadRazoesSociais(filePath: string): Promise<Map<string, { razaoSocial: string; porte: string }>> {
-  const map = new Map<string, { razaoSocial: string; porte: string }>();
+async function loadEmpresas(filePath: string): Promise<Map<string, EmpresaInfo>> {
+  const map = new Map<string, EmpresaInfo>();
   if (!filePath || !existsSync(filePath)) return map;
   const rl = createInterface({ input: createReadStream(filePath, { encoding: "latin1" }) });
   for await (const line of rl) {
     if (!line.trim()) continue;
-    const f = splitLine(line);
-    // 0 CNPJ_BASICO, 1 RAZAO_SOCIAL, 5 PORTE_EMPRESA
-    map.set(f[0], { razaoSocial: f[1] ?? "", porte: f[5] ?? "" });
+    const [cnpjBasico, info] = parseEmpresaLine(line);
+    map.set(cnpjBasico, info);
   }
   return map;
-}
-
-function csvEscape(v: string): string {
-  if (v == null) return "";
-  const s = String(v);
-  return /[;"\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 }
 
 async function main() {
@@ -76,69 +61,64 @@ async function main() {
     process.exit(1);
   }
 
-  const cnaesConfig = JSON.parse(
-    await import("node:fs").then((fs) => fs.readFileSync(path.join(__dirname, "cnaes.json"), "utf-8"))
-  );
+  const cnaesConfig = JSON.parse(readFileSync(path.join(__dirname, "cnaes.json"), "utf-8"));
   const perfilConfig = cnaesConfig[perfil === "a" ? "perfil_a" : "perfil_b"];
   const cnaeSet = new Set<string>(perfilConfig.cnaes);
-  const ufSet = new Set<string>(perfilConfig.ufs);
 
-  console.log(`Perfil ${perfil.toUpperCase()} (${perfilConfig.label}) — UFs: ${[...ufSet].join(", ")} — CNAEs: ${[...cnaeSet].join(", ")}`);
+  console.log(`Perfil ${perfil.toUpperCase()} (${perfilConfig.label}) — busca nacional — CNAEs: ${[...cnaeSet].join(", ")}`);
 
-  const [municipios, razoesSociais] = await Promise.all([
+  console.log("Passo 1/2: agregando nº de filiais ativas e data de abertura por empresa...");
+  const rlPass1 = createInterface({ input: createReadStream(estabelecimentosPath, { encoding: "latin1" }) });
+  const agregacao = await buildAgregacaoFiliais(rlPass1);
+
+  const [municipios, empresas] = await Promise.all([
     loadMunicipios(municipiosPath),
-    loadRazoesSociais(empresasPath),
+    loadEmpresas(empresasPath),
   ]);
 
-  const header = "cnpj;razao_social;nome_fantasia;porte;uf;municipio;cnae_principal;cep;telefone;email\n";
+  const header =
+    "cnpj;razao_social;nome_fantasia;porte;capital_social;data_abertura;filiais_ativas;uf;municipio;cnae_principal;cnaes_que_bateram;cep;telefone;email\n";
   if (!existsSync(outPath)) writeFileSync(outPath, header, "utf-8");
 
-  const rl = createInterface({ input: createReadStream(estabelecimentosPath, { encoding: "latin1" }) });
+  console.log("Passo 2/2: filtrando por CNAE (principal ou secundário) e gravando candidatos...");
+  const rlPass2 = createInterface({ input: createReadStream(estabelecimentosPath, { encoding: "latin1" }) });
 
   let total = 0;
   let matched = 0;
   const buffer: string[] = [];
 
-  for await (const line of rl) {
+  for await (const line of rlPass2) {
     if (!line.trim()) continue;
     total++;
-    const f = splitLine(line);
-    // índices conforme layout oficial "Estabelecimentos"
-    const cnpjBasico = f[0];
-    const cnpjOrdem = f[1];
-    const cnpjDv = f[2];
-    const nomeFantasia = f[4];
-    const situacaoCadastral = f[5];
-    const cnaePrincipal = f[11];
-    const cep = f[18];
-    const uf = f[19];
-    const municipioCodigo = f[20];
-    const ddd1 = f[21];
-    const telefone1 = f[22];
-    const email = f[27];
+    const row = parseEstabelecimentoLine(line);
+    if (row.situacaoCadastral !== ATIVA) continue;
+    if (row.identificadorMatrizFilial !== "1") continue; // só matrizes
 
-    if (situacaoCadastral !== "02") continue; // só ativas
-    if (!ufSet.has(uf)) continue;
-    if (!cnaeSet.has(cnaePrincipal)) continue;
+    const { matched: bateu, cnaesQueBateram } = matchesCnae(row.cnaePrincipal, row.cnaesSecundarios, cnaeSet);
+    if (!bateu) continue;
 
     matched++;
-    const cnpj = `${cnpjBasico}${cnpjOrdem}${cnpjDv}`;
-    const empresa = razoesSociais.get(cnpjBasico);
-    const municipioNome = municipios.get(municipioCodigo) ?? municipioCodigo;
-    const telefone = ddd1 && telefone1 ? `${ddd1}${telefone1}` : "";
+    const cnpj = `${row.cnpjBasico}${row.cnpjOrdem}${row.cnpjDv}`;
+    const empresa = empresas.get(row.cnpjBasico);
+    const municipioNome = municipios.get(row.municipioCodigo) ?? row.municipioCodigo;
+    const agregado = agregacao.get(row.cnpjBasico);
 
     buffer.push(
       [
         cnpj,
         csvEscape(empresa?.razaoSocial ?? ""),
-        csvEscape(nomeFantasia),
+        csvEscape(row.nomeFantasia),
         csvEscape(empresa?.porte ?? ""),
-        uf,
+        csvEscape(empresa?.capitalSocial ?? ""),
+        agregado?.dataAberturaMatriz ?? "",
+        String(agregado?.filiaisAtivas ?? 0),
+        row.uf,
         csvEscape(municipioNome),
-        cnaePrincipal,
-        cep,
-        telefone,
-        csvEscape(email),
+        row.cnaePrincipal,
+        csvEscape(cnaesQueBateram.join(",")),
+        row.cep,
+        row.telefone,
+        csvEscape(row.email),
       ].join(";")
     );
 
