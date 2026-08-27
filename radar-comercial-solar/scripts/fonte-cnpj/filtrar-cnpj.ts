@@ -92,7 +92,6 @@ async function main() {
     total++;
     const row = parseEstabelecimentoLine(line);
     if (row.situacaoCadastral !== ATIVA) continue;
-    if (row.identificadorMatrizFilial !== "1") continue; // só matrizes
 
     const { matched: bateu, cnaesQueBateram } = matchesCnae(row.cnaePrincipal, row.cnaesSecundarios, cnaeSet);
     if (!bateu) continue;

@@ -33,15 +33,36 @@ test("filtrar-cnpj.ts filtra por CNAE (principal ou secundário), nacional, com 
 
   assert.equal(header, "cnpj;razao_social;nome_fantasia;porte;capital_social;data_abertura;filiais_ativas;uf;municipio;cnae_principal;cnaes_que_bateram;cep;telefone;email");
 
-  // Só a matriz do CNPJ 33333333 deve aparecer (bate CNAE principal 4321500 do perfil A);
-  // a loja de roupas (44444444) não deve aparecer.
-  assert.equal(linhas.length, 1);
-  assert.match(linhas[0], /^33333333/);
-  assert.match(linhas[0], /SOLAR DISTRIBUIDORA X LTDA/);
-  assert.match(linhas[0], /800000,00/); // capital social
-  assert.match(linhas[0], /20180315/); // data de abertura da matriz
-  assert.match(linhas[0], /;2;/); // 2 filiais ativas (matriz + filial)
-  assert.match(linhas[0], /SAO PAULO/);
+  // Tanto a matriz (CNAE principal 4321500) quanto a filial (CNAE 4661300)
+  // devem aparecer como linhas independentes na saída, ambas com filiais_ativas=2
+  // e compartilhando a data_abertura da matriz. A loja (44444444) não aparece.
+  assert.equal(linhas.length, 2);
+
+  // Verificar que ambas as linhas pertencem ao CNPJ 33333333
+  const linha0Start = linhas[0].substring(0, 8);
+  const linha1Start = linhas[1].substring(0, 8);
+  assert.equal(linha0Start, "33333333");
+  assert.equal(linha1Start, "33333333");
+
+  // Matriz (0001): CNAE principal 4321500
+  const matrizLine = linhas.find((l) => l.includes("4321500"));
+  assert(matrizLine, "Matriz com CNAE 4321500 deve estar presente");
+  assert.match(matrizLine, /SOLAR DISTRIBUIDORA X LTDA/);
+  assert.match(matrizLine, /800000,00/); // capital social
+  assert.match(matrizLine, /20180315/); // data de abertura da matriz
+  assert.match(matrizLine, /;2;/); // 2 filiais ativas (matriz + filial)
+  assert.match(matrizLine, /SAO PAULO/);
+
+  // Filial (0002): CNAE principal 4661300
+  const filialLine = linhas.find((l) => l.includes("4661300"));
+  assert(filialLine, "Filial com CNAE 4661300 deve estar presente");
+  assert.match(filialLine, /;2;/); // também tem 2 filiais ativas (mesmo agregado)
+  assert.match(filialLine, /20180315/); // também tem data de abertura da matriz
+  assert.match(filialLine, /CURITIBA/); // sua própria cidade
+  assert.match(filialLine, /800000,00/); // capital social do CNPJ
+
+  // Loja de roupas (44444444) não deve aparecer
+  assert(!linhas.some((l) => l.includes("44444444")), "Loja de roupas (CNAE 4781400) não deve aparecer");
 
   rmSync(outPath);
 });
