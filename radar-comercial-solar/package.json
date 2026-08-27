@@ -12,7 +12,8 @@
     "radar:auditar-brevo": "node --env-file-if-exists=.env --experimental-strip-types src/cli.ts radar:auditar-brevo",
     "radar:painel": "node --env-file-if-exists=.env --experimental-strip-types src/panel/server.ts",
     "radar:painel:build": "cd src/panel/ui && npm run build",
-    "radar:painel:dev": "cd src/panel/ui && npx vite"
+    "radar:painel:dev": "cd src/panel/ui && npx vite",
+    "radar:importar-candidatos": "node --experimental-strip-types scripts/fonte-cnpj/importar-candidatos.ts"
   },
   "dependencies": {
     "playwright-core": "^1.60.0"
