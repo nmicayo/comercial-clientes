@@ -127,3 +127,5 @@ npm run radar:gerar-fila -- --perfil=b
 ```
 
 `data/candidatos.db` não é commitado (dado derivado, grande). Para recalibrar do zero, delete o banco e reimporte.
+
+Se você já tinha um `data/candidatos.db` de uma versão anterior, delete-o antes de reimportar — o schema mudou (chave composta cnpj_basico+perfil).

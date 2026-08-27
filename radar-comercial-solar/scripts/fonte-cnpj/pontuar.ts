@@ -31,12 +31,14 @@ function main() {
   const update = db.prepare(`
     UPDATE candidatos SET score_fit = :score_fit, score_estrutura = :score_estrutura,
       score_geografia = :score_geografia, score_total = :score_total, potencial = :potencial
-    WHERE cnpj_basico = :cnpj_basico
+    WHERE cnpj_basico = :cnpj_basico AND perfil = :perfil
   `);
 
   console.log(`Pontuando ${rows.length} candidatos do perfil ${perfil}...`);
 
   let alto = 0, medio = 0, baixo = 0;
+  db.exec("BEGIN");
+  try {
   for (const row of rows) {
     const resultado = calcularScore(
       {
@@ -62,11 +64,17 @@ function main() {
       score_total: resultado.scoreTotal,
       potencial: resultado.potencial,
       cnpj_basico: row.cnpj_basico,
+      perfil,
     });
 
     if (resultado.potencial === "alto") alto++;
     else if (resultado.potencial === "medio") medio++;
     else baixo++;
+  }
+    db.exec("COMMIT");
+  } catch (err) {
+    db.exec("ROLLBACK");
+    throw err;
   }
 
   db.close();

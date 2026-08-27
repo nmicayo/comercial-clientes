@@ -37,7 +37,7 @@ async function main() {
 
   const novosLeads: ReviewLead[] = [];
   const hoje = new Date().toISOString().slice(0, 10);
-  const marcarNaFila = db.prepare("UPDATE candidatos SET na_fila_desde = ? WHERE cnpj_completo = ?");
+  const marcarNaFila = db.prepare("UPDATE candidatos SET na_fila_desde = ? WHERE cnpj_completo = ? AND perfil = ?");
 
   for (const row of rows) {
     const lead = construirReviewLead(
@@ -62,7 +62,7 @@ async function main() {
     if (idsExistentes.has(lead.id)) continue;
 
     novosLeads.push(lead);
-    marcarNaFila.run(hoje, row.cnpj_completo);
+    marcarNaFila.run(hoje, row.cnpj_completo, perfil);
   }
 
   const filaFinal = [...filaAtual, ...novosLeads];

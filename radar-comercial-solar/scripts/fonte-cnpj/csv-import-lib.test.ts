@@ -61,3 +61,17 @@ test("agregarCandidatos usa a primeira data_abertura não-vazia encontrada", asy
   const map = await agregarCandidatos(linhasDeTeste(linhas));
   assert.equal(map.get("33333333")!.dataAbertura, "20150610");
 });
+
+test("agregarCandidatos mantém razao_social/nome_fantasia/porte/capital_social de shard anterior quando o shard seguinte vem vazio (empresa não encontrada no Empresas daquele shard)", async () => {
+  const linhas = [
+    "44444444000100;EMPRESA COMPLETA LTDA;FANTASIA W;05;900000,00;20190101;1;SP;SAO PAULO;4321500;4321500;01000000;11988887777;w@w.com",
+    "44444444000280;;;;;20190101;2;PR;CURITIBA;4321500;4321500;80000000;;",
+  ];
+  const map = await agregarCandidatos(linhasDeTeste(linhas));
+  const c = map.get("44444444");
+  assert.ok(c);
+  assert.equal(c!.razaoSocial, "EMPRESA COMPLETA LTDA");
+  assert.equal(c!.nomeFantasia, "FANTASIA W");
+  assert.equal(c!.porte, "05");
+  assert.equal(c!.capitalSocial, 900000);
+});

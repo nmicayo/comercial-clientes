@@ -40,7 +40,7 @@ async function main() {
       :capital_social, :data_abertura, :filiais_ativas, :uf, :municipio,
       :cnae_principal, :cnaes_que_bateram, :cep, :telefone, :email
     )
-    ON CONFLICT(cnpj_basico) DO UPDATE SET
+    ON CONFLICT(cnpj_basico, perfil) DO UPDATE SET
       perfil = excluded.perfil,
       cnpj_completo = excluded.cnpj_completo,
       razao_social = excluded.razao_social,
@@ -58,25 +58,32 @@ async function main() {
       email = excluded.email
   `);
 
-  for (const c of agregados.values()) {
-    upsert.run({
-      cnpj_basico: c.cnpjBasico,
-      perfil,
-      cnpj_completo: c.cnpjCompleto,
-      razao_social: c.razaoSocial,
-      nome_fantasia: c.nomeFantasia,
-      porte: c.porte,
-      capital_social: c.capitalSocial,
-      data_abertura: c.dataAbertura,
-      filiais_ativas: c.filiaisAtivas,
-      uf: c.uf,
-      municipio: c.municipio,
-      cnae_principal: c.cnaePrincipal,
-      cnaes_que_bateram: c.cnaesQueBateram,
-      cep: c.cep,
-      telefone: c.telefone,
-      email: c.email,
-    });
+  db.exec("BEGIN");
+  try {
+    for (const c of agregados.values()) {
+      upsert.run({
+        cnpj_basico: c.cnpjBasico,
+        perfil,
+        cnpj_completo: c.cnpjCompleto,
+        razao_social: c.razaoSocial,
+        nome_fantasia: c.nomeFantasia,
+        porte: c.porte,
+        capital_social: c.capitalSocial,
+        data_abertura: c.dataAbertura,
+        filiais_ativas: c.filiaisAtivas,
+        uf: c.uf,
+        municipio: c.municipio,
+        cnae_principal: c.cnaePrincipal,
+        cnaes_que_bateram: c.cnaesQueBateram,
+        cep: c.cep,
+        telefone: c.telefone,
+        email: c.email,
+      });
+    }
+    db.exec("COMMIT");
+  } catch (err) {
+    db.exec("ROLLBACK");
+    throw err;
   }
 
   db.close();

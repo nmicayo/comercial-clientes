@@ -31,7 +31,7 @@ function main() {
   const grupo = clientesEspelho[perfil === "a" ? "perfil_a" : "perfil_b"] as Record<string, string>;
 
   const db = openDb();
-  const buscar = db.prepare("SELECT * FROM candidatos WHERE cnpj_basico = ?");
+  const buscar = db.prepare("SELECT * FROM candidatos WHERE cnpj_basico = ? AND perfil = ?");
 
   console.log(`\nClientes-espelho — Perfil ${perfil.toUpperCase()}\n`);
   console.log(
@@ -45,7 +45,7 @@ function main() {
   console.log("-".repeat(90));
 
   for (const [nome, cnpjBasico] of Object.entries(grupo)) {
-    const row = buscar.get(cnpjBasico) as Record<string, unknown> | undefined;
+    const row = buscar.get(cnpjBasico, perfil) as Record<string, unknown> | undefined;
     if (!row) {
       console.log(`${nome.padEnd(28)}${cnpjBasico.padEnd(14)}(não encontrado na tabela candidatos — rode o import primeiro, ou a empresa não bateu CNAE do perfil)`);
       continue;

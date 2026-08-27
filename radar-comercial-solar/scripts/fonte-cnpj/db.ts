@@ -8,7 +8,7 @@ export const DEFAULT_DB_PATH = path.join(__dirname, "..", "..", "data", "candida
 
 const SCHEMA = `
 CREATE TABLE IF NOT EXISTS candidatos (
-  cnpj_basico TEXT PRIMARY KEY,
+  cnpj_basico TEXT NOT NULL,
   perfil TEXT NOT NULL,
   cnpj_completo TEXT NOT NULL,
   razao_social TEXT,
@@ -30,12 +30,15 @@ CREATE TABLE IF NOT EXISTS candidatos (
   score_total INTEGER,
   potencial TEXT,
   na_fila_desde TEXT,
-  status_revisao TEXT
+  status_revisao TEXT,
+  PRIMARY KEY (cnpj_basico, perfil)
 );
 `;
 
 export function openDb(dbPath: string = DEFAULT_DB_PATH): DatabaseSync {
   const db = new DatabaseSync(dbPath);
   db.exec(SCHEMA);
+  db.exec("PRAGMA journal_mode = WAL");
+  db.exec("PRAGMA synchronous = NORMAL");
   return db;
 }
