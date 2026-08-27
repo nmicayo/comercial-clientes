@@ -43,10 +43,10 @@ extração — fica só como referência para a etapa de score (Fase 2).
 # Perfil A (solar), um arquivo de estabelecimentos por vez
 node --experimental-strip-types scripts/fonte-cnpj/filtrar-cnpj.ts \
   --perfil=a \
-  --estabelecimentos data/2026-08/extracted/Estabelecimentos0.csv \
-  --empresas data/2026-08/extracted/Empresas0.csv \
-  --municipios data/2026-08/extracted/Municipios.csv \
-  --out data/candidatos-cnpj-perfil-a.csv
+  --estabelecimentos=data/2026-08/extracted/Estabelecimentos0.csv \
+  --empresas=data/2026-08/extracted/Empresas0.csv \
+  --municipios=data/2026-08/extracted/Municipios.csv \
+  --out=data/candidatos-cnpj-perfil-a.csv
 
 # repetir trocando Estabelecimentos0 -> Estabelecimentos1, 2, ... 9
 # (o --out é append, então vai acumulando um único CSV final)
@@ -54,6 +54,19 @@ node --experimental-strip-types scripts/fonte-cnpj/filtrar-cnpj.ts \
 
 Trocar `--perfil=a` por `--perfil=b` para o Perfil B (industrial/agro/bebidas)
 — gerar um `--out` separado por perfil.
+
+Shards grandes (ex. `Estabelecimentos0`, o maior, com ~29-30M linhas) podem
+precisar de mais heap do que o padrão do Node (4GB), sob risco de OOM. Use
+`--max-old-space-size` entre 8192 e 12288 (MB) nesses casos — não é
+necessário para os shards menores (1-9, bem menores que o 0):
+
+```bash
+node --max-old-space-size=8192 --experimental-strip-types scripts/fonte-cnpj/filtrar-cnpj.ts \
+  --perfil=a --estabelecimentos=data/2026-08/extracted/Estabelecimentos0.csv \
+  --empresas=data/2026-08/extracted/Empresas0.csv \
+  --municipios=data/2026-08/extracted/Municipios.csv \
+  --out=data/candidatos-cnpj-perfil-a.csv
+```
 
 ## 4. Saída
 
@@ -66,9 +79,16 @@ Um CSV em `data/` com as colunas:
   mesma empresa carrega o mesmo valor.
 - `cnaes_que_bateram` lista quais CNAEs (principal e/ou secundários) casaram
   com o perfil filtrado — útil para auditar falsos positivos depois.
+- `filiais_ativas` conta todos os estabelecimentos ativos da empresa
+  (matriz + filiais), não só as filiais — uma empresa de único endereço
+  reporta `1`, não `0`.
 
 Isso vira o ponto de partida da etapa de score (Fase 2) — filtra ruído
 mecanicamente, sem IA lendo site por site.
+
+Atenção: `--out` é append (acumula entre shards, ver seção 3). Rodar o mesmo
+shard duas vezes contra o mesmo `--out` duplica as linhas — se for reprocessar
+um shard já rodado, apague o arquivo de saída antes.
 
 ## Testes
 
