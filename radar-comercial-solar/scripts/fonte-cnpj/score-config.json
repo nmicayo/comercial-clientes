@@ -1,0 +1,31 @@
+{
+  "perfil_a": {
+    "estrutura": { "capital_social_min": 500000, "filiais_min": 2, "idade_anos_min": 3 },
+    "pesos": {
+      "fit_cnae_principal": 30,
+      "fit_cnae_secundario": 15,
+      "estrutura_filiais": 25,
+      "estrutura_porte": 15,
+      "estrutura_capital": 10,
+      "estrutura_idade": 10,
+      "geo_cidade_prioritaria": 15,
+      "geo_uf_perfil": 10
+    },
+    "faixas": { "baixo_max": 39, "medio_max": 69 }
+  },
+  "perfil_b": {
+    "estrutura": { "capital_social_min": 500000, "filiais_min": 2, "idade_anos_min": 3 },
+    "pesos": {
+      "fit_cnae_principal": 30,
+      "fit_cnae_secundario": 15,
+      "estrutura_filiais": 25,
+      "estrutura_porte": 15,
+      "estrutura_capital": 10,
+      "estrutura_idade": 10,
+      "geo_cidade_prioritaria": 15,
+      "geo_uf_perfil": 10
+    },
+    "faixas": { "baixo_max": 39, "medio_max": 69 }
+  },
+  "_aviso": "Valores de partida — ajustar depois de rodar radar:calibrar com os clientes-espelho reais."
+}
