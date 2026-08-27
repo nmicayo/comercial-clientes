@@ -13,7 +13,8 @@
     "radar:painel": "node --env-file-if-exists=.env --experimental-strip-types src/panel/server.ts",
     "radar:painel:build": "cd src/panel/ui && npm run build",
     "radar:painel:dev": "cd src/panel/ui && npx vite",
-    "radar:importar-candidatos": "node --experimental-strip-types scripts/fonte-cnpj/importar-candidatos.ts"
+    "radar:importar-candidatos": "node --experimental-strip-types scripts/fonte-cnpj/importar-candidatos.ts",
+    "radar:calibrar": "node --experimental-strip-types scripts/fonte-cnpj/calibrar.ts"
   },
   "dependencies": {
     "playwright-core": "^1.60.0"

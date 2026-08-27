@@ -1,0 +1,21 @@
+{
+  "perfil_a": {
+    "FOTUS Distribuidora": "15701525",
+    "Solfácil": "31931053",
+    "Sol Copérnico": "39798207",
+    "Gradiente Solar": "39942227"
+  },
+  "perfil_b": {
+    "Ambev": "07526557",
+    "Coamo Agroindustrial": "75904383",
+    "Owens-Illinois": "08910541",
+    "Crown Embalagens": "33174335",
+    "Trigobel": "03438822",
+    "Camil": "64904295",
+    "Spal Indústria": "61186888",
+    "HNK BR Indústria": "50221019"
+  },
+  "_excluidos": {
+    "DNL Comércio": "CNPJ 07189629 não encontrado em nenhum dos 10 shards de Estabelecimentos — excluído da calibração, ver spec Fase 2"
+  }
+}
