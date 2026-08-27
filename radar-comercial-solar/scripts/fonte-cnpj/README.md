@@ -99,3 +99,31 @@ npm test
 Roda os testes unitários de `lib.ts` (parsing/matching, agregação de filiais)
 e o teste de integração do script completo contra fixtures pequenas em
 `__fixtures__/`.
+
+## Fase 2 — Score via SQLite
+
+Depois de gerar os CSVs de candidatos (Fase 1), rode em sequência:
+
+```bash
+# 1. Extração completa (10 shards) — pode levar horas
+./scripts/fonte-cnpj/extrair-todos-shards.sh a
+./scripts/fonte-cnpj/extrair-todos-shards.sh b
+
+# 2. Import para SQLite (idempotente — pode rodar de novo sem duplicar)
+npm run radar:importar-candidatos -- --perfil=a
+npm run radar:importar-candidatos -- --perfil=b
+
+# 3. Calibração manual — olhe os números e ajuste scripts/fonte-cnpj/score-config.json
+npm run radar:calibrar -- --perfil=a
+npm run radar:calibrar -- --perfil=b
+
+# 4. Score
+npm run radar:pontuar -- --perfil=a
+npm run radar:pontuar -- --perfil=b
+
+# 5. Gerar fila (top 200 por perfil, incremental entre rodadas)
+npm run radar:gerar-fila -- --perfil=a
+npm run radar:gerar-fila -- --perfil=b
+```
+
+`data/candidatos.db` não é commitado (dado derivado, grande). Para recalibrar do zero, delete o banco e reimporte.
