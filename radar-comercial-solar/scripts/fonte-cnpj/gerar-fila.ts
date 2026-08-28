@@ -60,10 +60,15 @@ async function main() {
       perfil
     );
 
+    // Marca sempre, mesmo quando o lead já está na fila — senão a linha
+    // continua satisfazendo na_fila_desde IS NULL e volta a ser
+    // selecionada (e pulada) toda vez que o comando roda de novo,
+    // ocupando uma vaga do top 200 para sempre.
+    marcarNaFila.run(hoje, row.cnpj_completo, perfil);
+
     if (idsExistentes.has(lead.id)) continue;
 
     novosLeads.push(lead);
-    marcarNaFila.run(hoje, row.cnpj_completo, perfil);
   }
 
   const filaFinal = [...filaAtual, ...novosLeads];
