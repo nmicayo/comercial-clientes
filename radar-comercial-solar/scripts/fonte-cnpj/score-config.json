@@ -14,7 +14,7 @@
     "faixas": { "baixo_max": 39, "medio_max": 69 }
   },
   "perfil_b": {
-    "estrutura": { "capital_social_min": 500000, "filiais_min": 2, "idade_anos_min": 3 },
+    "estrutura": { "capital_social_min": 2000000, "filiais_min": 5, "idade_anos_min": 10 },
     "pesos": {
       "fit_cnae_principal": 30,
       "fit_cnae_secundario": 15,
@@ -27,5 +27,6 @@
     },
     "faixas": { "baixo_max": 39, "medio_max": 69 }
   },
-  "_aviso": "Valores de partida — ajustar depois de rodar radar:calibrar com os clientes-espelho reais."
+  "_calibrado": true,
+  "_aviso": "Calibrado em 2026-08-28 com dados reais dos clientes-espelho (radar:calibrar). filiais_ativas nunca é 0 (conta a matriz) — filiais_min sempre precisa ser >=2 pra discriminar algo, nunca 1 (testado: filiais_min=1 dá +25 pontos de graça pra 100% dos candidatos). Perfil B: clientes-espelho são gigantes industriais (26-218 filiais, capital de centenas de milhões a bilhões) — limiares bem mais altos que o Perfil A."
 }
