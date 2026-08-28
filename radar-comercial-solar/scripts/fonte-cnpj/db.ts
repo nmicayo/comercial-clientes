@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS candidatos (
   potencial TEXT,
   na_fila_desde TEXT,
   status_revisao TEXT,
+  dados_incompletos INTEGER DEFAULT 0,
   PRIMARY KEY (cnpj_basico, perfil)
 );
 `;

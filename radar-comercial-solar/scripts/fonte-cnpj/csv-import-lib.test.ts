@@ -62,6 +62,25 @@ test("agregarCandidatos usa a primeira data_abertura não-vazia encontrada", asy
   assert.equal(map.get("33333333")!.dataAbertura, "20150610");
 });
 
+test("agregarCandidatos marca dadosIncompletos quando o campo UF não tem o formato esperado (ex: deslocamento de colunas upstream)", async () => {
+  const linhas = [
+    // linha real observada na extração: falta o campo UF, tudo desloca uma posição
+    "55025957000184;WT SOLUCOES INTEGRADAS LTDA;;03;100000,00;20240507;1;14093000;SP;4781400;4759801;JARDIM INTERLAGOS;696916;",
+  ];
+  const map = await agregarCandidatos(linhasDeTeste(linhas));
+  const c = map.get("55025957");
+  assert.ok(c);
+  assert.equal(c!.dadosIncompletos, true);
+});
+
+test("agregarCandidatos não marca dadosIncompletos quando o campo UF tem formato válido", async () => {
+  const linhas = [
+    "11111111000190;EMPRESA X;;05;800000,00;20180315;2;SP;SAO PAULO;4321500;4321500;01000000;11999998888;x@x.com",
+  ];
+  const map = await agregarCandidatos(linhasDeTeste(linhas));
+  assert.equal(map.get("11111111")!.dadosIncompletos, false);
+});
+
 test("agregarCandidatos mantém razao_social/nome_fantasia/porte/capital_social de shard anterior quando o shard seguinte vem vazio (empresa não encontrada no Empresas daquele shard)", async () => {
   const linhas = [
     "44444444000100;EMPRESA COMPLETA LTDA;FANTASIA W;05;900000,00;20190101;1;SP;SAO PAULO;4321500;4321500;01000000;11988887777;w@w.com",

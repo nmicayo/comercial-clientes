@@ -34,11 +34,11 @@ async function main() {
     INSERT INTO candidatos (
       cnpj_basico, perfil, cnpj_completo, razao_social, nome_fantasia, porte,
       capital_social, data_abertura, filiais_ativas, uf, municipio,
-      cnae_principal, cnaes_que_bateram, cep, telefone, email
+      cnae_principal, cnaes_que_bateram, cep, telefone, email, dados_incompletos
     ) VALUES (
       :cnpj_basico, :perfil, :cnpj_completo, :razao_social, :nome_fantasia, :porte,
       :capital_social, :data_abertura, :filiais_ativas, :uf, :municipio,
-      :cnae_principal, :cnaes_que_bateram, :cep, :telefone, :email
+      :cnae_principal, :cnaes_que_bateram, :cep, :telefone, :email, :dados_incompletos
     )
     ON CONFLICT(cnpj_basico, perfil) DO UPDATE SET
       perfil = excluded.perfil,
@@ -55,7 +55,8 @@ async function main() {
       cnaes_que_bateram = excluded.cnaes_que_bateram,
       cep = excluded.cep,
       telefone = excluded.telefone,
-      email = excluded.email
+      email = excluded.email,
+      dados_incompletos = excluded.dados_incompletos
   `);
 
   db.exec("BEGIN");
@@ -78,6 +79,7 @@ async function main() {
         cep: c.cep,
         telefone: c.telefone,
         email: c.email,
+        dados_incompletos: c.dadosIncompletos ? 1 : 0,
       });
     }
     db.exec("COMMIT");

@@ -62,7 +62,10 @@ export interface CandidatoAgregado {
   cep: string;
   telefone: string;
   email: string;
+  dadosIncompletos: boolean;
 }
+
+const UF_VALIDA = /^[A-Z]{2}$/;
 
 export async function agregarCandidatos(
   linhas: AsyncIterable<string>
@@ -79,6 +82,12 @@ export async function agregarCandidatos(
     if (!line.trim()) continue;
 
     const f = parseCsvLine(line);
+    // Detecta linhas com colunas deslocadas na origem (ex: UF ausente na
+    // Fase 1 desloca CEP/CNAE/telefone para as posições vizinhas). O
+    // sintoma mais confiável é o campo UF não ter o formato de 2 letras
+    // esperado — contagem de campos não pega esse caso, porque o total
+    // de campos continua correto, só o conteúdo é que desliza.
+    const linhaIncompleta = !UF_VALIDA.test(f[7] ?? "");
     const cnpjCompleto = f[0];
     const cnpjBasico = cnpjCompleto.slice(0, 8);
     const filiaisAtivas = Number(f[6]) || 0;
@@ -108,6 +117,7 @@ export async function agregarCandidatos(
       cep: f[11],
       telefone: f[12],
       email: f[13],
+      dadosIncompletos: linhaIncompleta || anterior?.dadosIncompletos || false,
     });
   }
 

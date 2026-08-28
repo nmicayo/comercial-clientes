@@ -21,7 +21,7 @@ async function main() {
   const rows = db
     .prepare(
       `SELECT cnpj_completo, razao_social, nome_fantasia, uf, municipio, cnaes_que_bateram,
-              telefone, email, score_total, score_fit, score_estrutura, score_geografia, potencial
+              telefone, email, score_total, score_fit, score_estrutura, score_geografia, potencial, dados_incompletos
        FROM candidatos
        WHERE perfil = ? AND potencial = 'alto' AND na_fila_desde IS NULL
        ORDER BY score_total DESC
@@ -55,6 +55,7 @@ async function main() {
         scoreEstrutura: Number(row.score_estrutura ?? 0),
         scoreGeografia: Number(row.score_geografia ?? 0),
         potencial: String(row.potencial) as "alto" | "medio" | "baixo",
+        dadosIncompletos: Number(row.dados_incompletos ?? 0) === 1,
       },
       perfil
     );

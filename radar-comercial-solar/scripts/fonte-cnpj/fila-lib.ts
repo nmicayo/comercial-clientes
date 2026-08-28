@@ -14,6 +14,7 @@ export interface CandidatoParaFila {
   scoreEstrutura: number;
   scoreGeografia: number;
   potencial: "alto" | "medio" | "baixo";
+  dadosIncompletos: boolean;
 }
 
 export function construirReviewLead(c: CandidatoParaFila, perfil: "a" | "b"): ReviewLead {
@@ -30,7 +31,7 @@ export function construirReviewLead(c: CandidatoParaFila, perfil: "a" | "b"): Re
 - Fonte: CNPJ (Receita Federal) — score firmográfico
 - Descrição encontrada:
 - Sinais logísticos: CNAEs ${sinais.join(", ")}
-- Cliente espelho mais parecido:
+- Cliente espelho mais parecido:${c.dadosIncompletos ? "\n- ATENÇÃO: dados incompletos na extração (possível deslocamento de colunas) — revisar UF/CNAE/CEP/telefone manualmente antes de confiar no score" : ""}
 - Telefone: ${c.telefone || "-"}
 - E-mail: ${c.email || "-"}
 - Potencial: ${c.potencial}
@@ -67,7 +68,7 @@ export function construirReviewLead(c: CandidatoParaFila, perfil: "a" | "b"): Re
     suggestedChannel: c.email ? "e-mail" : c.telefone ? "telefone" : "a definir",
     nextAction: "revisar e enriquecer contato antes de enviar",
     signals: sinais,
-    flags: [],
+    flags: c.dadosIncompletos ? ["dados incompletos — revisar UF/CNAE/contato manualmente"] : [],
     scoreReason: `fit ${c.scoreFit} + estrutura ${c.scoreEstrutura} + geografia ${c.scoreGeografia}`,
     destinoSugerido: "leads-qualificados.md",
     resumoCurto: `${c.razaoSocial} — ${c.municipio}/${c.uf} — score ${c.scoreTotal}`,
