@@ -24,6 +24,17 @@ export interface CandidatoParaScore {
   uf: string;
 }
 
+// Remove acentos e normaliza para maiúsculas antes de comparar nomes de
+// município — a base da RFB às vezes vem sem acento (latin1), mas não é
+// garantido; sem isso, "MARINGÁ" (com acento) nunca bateria com "MARINGA".
+export function normalizarNomeCidade(nome: string): string {
+  return nome
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toUpperCase()
+    .trim();
+}
+
 function calcularIdadeAnos(dataAbertura: string): number {
   if (!dataAbertura || dataAbertura.length !== 8) return 0;
   const ano = Number(dataAbertura.slice(0, 4));
@@ -58,7 +69,7 @@ export function calcularScore(
   if (calcularIdadeAnos(candidato.dataAbertura) >= config.estrutura.idade_anos_min) scoreEstrutura += config.pesos.estrutura_idade;
 
   let scoreGeografia = 0;
-  if (cidadesPrioritarias.has(candidato.municipio)) {
+  if (cidadesPrioritarias.has(normalizarNomeCidade(candidato.municipio))) {
     scoreGeografia = config.pesos.geo_cidade_prioritaria;
   } else if (ufsDoPerfil.has(candidato.uf)) {
     scoreGeografia = config.pesos.geo_uf_perfil;

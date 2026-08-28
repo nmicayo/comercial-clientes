@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { calcularScore, type ScoreConfig, type CandidatoParaScore } from "./score-lib.ts";
+import { calcularScore, normalizarNomeCidade, type ScoreConfig, type CandidatoParaScore } from "./score-lib.ts";
 
 const config: ScoreConfig = {
   estrutura: { capital_social_min: 500000, filiais_min: 2, idade_anos_min: 3 },
@@ -83,4 +83,15 @@ test("faixas de classificação respeitam os limites configurados", () => {
     calcularScore(candidato({ filiaisAtivas: 2, porte: "05" }), config, cnaesDoPerfil, cidadesPrioritarias, ufsDoPerfil).potencial,
     "alto"
   );
+});
+
+test("normalizarNomeCidade remove acentos e uppercase, permitindo bater 'MARINGÁ' com 'MARINGA'", () => {
+  assert.equal(normalizarNomeCidade("Maringá"), "MARINGA");
+  assert.equal(normalizarNomeCidade("são paulo"), "SAO PAULO");
+});
+
+test("scoreGeografia bate cidade prioritária mesmo quando o município real vem com acento", () => {
+  const c = candidato({ municipio: "MARINGÁ", uf: "PR" });
+  const r = calcularScore(c, config, cnaesDoPerfil, cidadesPrioritarias, ufsDoPerfil);
+  assert.equal(r.scoreGeografia, 15, "deveria bater geo_cidade_prioritaria, não geo_uf_perfil");
 });

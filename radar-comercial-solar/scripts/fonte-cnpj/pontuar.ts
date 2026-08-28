@@ -2,12 +2,14 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { openDb } from "./db.ts";
-import { calcularScore, type ScoreConfig } from "./score-lib.ts";
+import { calcularScore, normalizarNomeCidade, type ScoreConfig } from "./score-lib.ts";
 import { parseArgs } from "./lib.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const CIDADES_PRIORITARIAS = new Set(["CABO DE SANTO AGOSTINHO", "MARINGA", "BARUERI"]);
+const CIDADES_PRIORITARIAS = new Set(
+  ["CABO DE SANTO AGOSTINHO", "MARINGA", "BARUERI"].map(normalizarNomeCidade)
+);
 
 function main() {
   const args = parseArgs(process.argv.slice(2));
