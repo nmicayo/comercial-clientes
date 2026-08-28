@@ -24,7 +24,16 @@
       "0161003",
       "4623108",
       "1091102",
-      "1096101"
+      "1096101",
+      "2312500",
+      "2591800",
+      "4639701",
+      "4623199"
     ]
+  },
+
+  "_clientes_espelho_nao_resolvidos": {
+    "FOTUS Distribuidora (perfil_a)": "CNPJ 15701525 não encontrado em nenhum dos 10 shards de Estabelecimentos — mesmo problema do DNL Comércio.",
+    "Solfácil (perfil_a)": "CNPJ 31931053 encontrado, mas CNAE principal real (7490104, atividades profissionais não especificadas) e secundário mais próximo (4742300, varejo de material elétrico) são genéricos demais para servir de filtro sem trazer ruído — não adicionados."
   }
 }
